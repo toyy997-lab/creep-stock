@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ครีปถือดาบ">
+<title>ครีปถือดาบ — ระบบสต็อก</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
+:root {
+  --bg:#0f0f13;--bg2:#18181f;--bg3:#22222c;
+  --border:#2e2e3a;--border2:#3e3e4e;
+  --text:#e8e8f0;--text2:#9090a8;--text3:#5a5a70;
+  --orange:#e8822a;--orange2:#c46818;
+  --green:#4caf7a;--green-dim:#0a2016;
+  --red:#e05252;--red-dim:#220a0a;
+  --yellow:#d4a843;--yellow-dim:#251d08;
+  --blue:#5b8fd4;--blue-dim:#0a1525;
+  --r:12px;--rs:8px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:80px}
+
+.hdr{background:var(--bg2);border-bottom:1px solid var(--border);padding:12px 16px;position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between}
+.hdr-left h1{font-size:16px;font-weight:600}
+.hdr-left .sub{font-size:11px;color:var(--text3);margin-top:1px}
+.hdr-right{display:flex;gap:8px;align-items:center}
+.btn-sm{background:none;border:1px solid var(--border2);color:var(--text2);padding:6px 12px;border-radius:var(--rs);font-family:'Sarabun',sans-serif;font-size:12px;cursor:pointer}
+.btn-sm:active{background:var(--bg3)}
+.btn-orange{background:var(--orange);border-color:var(--orange);color:#fff}
+
+.tabs{display:flex;gap:0;background:var(--bg2);border-bottom:1px solid var(--border);overflow-x:auto}
+.tab-btn{background:none;border:none;border-bottom:2px solid transparent;padding:10px 16px;font-family:'Sarabun',sans-serif;font-size:13px;color:var(--text2);cursor:pointer;white-space:nowrap;flex-shrink:0}
+.tab-btn.active{color:var(--orange);border-bottom-color:var(--orange)}
+.page{display:none;padding:12px 16px}
+.page.active{display:block}
+
+.strip{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:12px 16px;background:var(--bg2);border-bottom:1px solid var(--border)}
+.strip-item{text-align:center}
+.strip-item .sv{font-size:20px;font-weight:700}
+.strip-item .sl{font-size:10px;color:var(--text3);margin-top:1px}
+.ok{color:var(--green)}.warn{color:var(--yellow)}.danger{color:var(--red)}
+
+.sec-lbl{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+.ccard{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);margin-bottom:10px;overflow:hidden}
+.ccard.s-ok{border-left:3px solid var(--green)}
+.ccard.s-low{border-left:3px solid var(--yellow)}
+.ccard.s-empty{border-left:3px solid var(--red)}
+.chead{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border)}
+.ctitle{font-size:14px;font-weight:600}
+.csub{font-size:11px;color:var(--text3);margin-top:1px}
+.chead-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+.badge{font-size:11px;padding:3px 9px;border-radius:20px;font-weight:500}
+.b-ok{background:var(--green-dim);color:var(--green);border:1px solid var(--green)}
+.b-low{background:var(--yellow-dim);color:var(--yellow);border:1px solid var(--yellow)}
+.b-empty{background:var(--red-dim);color:var(--red);border:1px solid var(--red)}
+.rounds-pill{font-size:11px;background:var(--bg3);border:1px solid var(--border2);border-radius:20px;padding:2px 8px;color:var(--text2)}
+.rounds-pill.empty{color:var(--red);border-color:var(--red)}
+.rounds-pill.full{color:var(--green);border-color:var(--green)}
+
+.irow{display:grid;grid-template-columns:36px 1fr 34px 48px 34px;align-items:center;gap:6px;padding:8px 14px;border-bottom:1px solid var(--border)}
+.irow:last-of-type{border-bottom:none}
+.iimg{width:34px;height:34px;border-radius:6px;background:var(--bg3);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:16px;overflow:hidden;position:relative}
+.iimg img{width:100%;height:100%;object-fit:cover}
+.iimg input[type=file]{position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer}
+.iname{font-size:13px;color:var(--text)}
+.qb{width:32px;height:32px;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--rs);color:var(--text2);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.qb:active{background:var(--border2)}
+.iqty{font-size:16px;font-weight:700;text-align:center;color:var(--text)}
+.iqty.low{color:var(--yellow)}.iqty.empty{color:var(--red)}
+
+.cfoot{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--border)}
+.cfoot-col{padding:8px 14px}
+.cfoot-col:first-child{border-right:1px solid var(--border)}
+.cfoot-lbl{font-size:10px;color:var(--text3);margin-bottom:2px}
+.cfoot-val{font-size:15px;font-weight:700}
+
+.send-row{display:flex;align-items:center;gap:6px;padding:8px 14px;border-top:1px solid var(--border);background:var(--bg3)}
+.send-lbl{font-size:12px;color:var(--text2);flex:1}
+.send-inp{width:52px;height:30px;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--rs);color:var(--text);font-family:'Sarabun',sans-serif;font-size:14px;font-weight:700;text-align:center}
+.send-inp:focus{outline:none;border-color:var(--orange)}
+.send-btn{background:var(--orange);border:none;border-radius:var(--rs);color:#fff;font-family:'Sarabun',sans-serif;font-size:13px;font-weight:600;padding:7px 14px;cursor:pointer}
+
+.thorn-card{background:var(--bg2);border:1px solid var(--border);border-left:3px solid var(--blue);border-radius:var(--r);margin-bottom:10px;overflow:hidden}
+.thorn-nums{display:grid;grid-template-columns:1fr 1fr 1fr;border-top:1px solid var(--border)}
+.thorn-col{padding:10px 14px;text-align:center;border-right:1px solid var(--border)}
+.thorn-col:last-child{border-right:none}
+.thorn-num{font-size:22px;font-weight:700;color:var(--blue)}
+.thorn-sub{font-size:10px;color:var(--text3);margin-top:2px}
+.thorn-actions{display:flex;gap:6px;padding:8px 14px;border-top:1px solid var(--border);background:var(--bg3);flex-wrap:wrap}
+.thorn-inp{width:60px;height:30px;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--rs);color:var(--text);font-family:'Sarabun',sans-serif;font-size:13px;font-weight:700;text-align:center}
+.thorn-btn{background:none;border:1px solid var(--border2);color:var(--text2);font-family:'Sarabun',sans-serif;font-size:12px;padding:6px 10px;border-radius:var(--rs);cursor:pointer;flex:1}
+.thorn-btn.add{background:var(--blue);border-color:var(--blue);color:#fff}
+
+.alert-box{border-radius:var(--r);border:1px solid;margin-bottom:10px;overflow:hidden}
+.alert-box .ah{padding:10px 14px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px}
+.alert-box .ab{padding:8px 14px;font-size:13px;color:var(--text2);line-height:1.8}
+.alert-box.danger{border-color:var(--red);background:var(--red-dim)}.alert-box.danger .ah{color:var(--red)}
+.alert-box.warn{border-color:var(--yellow);background:var(--yellow-dim)}.alert-box.warn .ah{color:var(--yellow)}
+.alert-box.ok{border-color:var(--green);background:var(--green-dim)}.alert-box.ok .ah{color:var(--green)}
+
+/* CALC */
+.calc-item{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);margin-bottom:8px}
+.calc-main{display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:10px;padding:12px 14px}
+.calc-name{font-size:14px;font-weight:500}
+.calc-rate{font-size:12px;color:var(--text3);margin-top:3px;display:flex;align-items:center;gap:4px}
+.calc-rate input{background:none;border:none;border-bottom:1px dashed var(--border2);color:var(--orange);font-family:'Sarabun',sans-serif;font-size:12px;width:50px;text-align:center}
+.calc-qty-wrap{display:flex;flex-direction:column;align-items:center;gap:3px}
+.calc-qty{width:70px;height:40px;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--rs);color:var(--text);font-family:'Sarabun',sans-serif;font-size:18px;font-weight:700;text-align:center}
+.calc-qty:focus{outline:none;border-color:var(--orange)}
+.calc-ql{font-size:10px;color:var(--text3)}
+.calc-sub{text-align:right;min-width:65px}
+.calc-sub .amt{font-size:18px;font-weight:700;color:var(--text)}
+.calc-sub .amt.active{color:var(--green)}
+.calc-sub .unit{font-size:10px;color:var(--text3)}
+.total-bar{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center}
+.total-lbl{font-size:13px;color:var(--text2)}
+.total-amt{font-size:28px;font-weight:700;color:var(--orange)}
+.copy-btn{display:block;width:100%;background:var(--orange);border:none;border-radius:var(--r);color:#fff;font-family:'Sarabun',sans-serif;font-size:15px;font-weight:600;padding:14px;cursor:pointer;margin-top:12px}
+
+/* LOADING */
+.loading{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;gap:16px}
+.loading .spinner{width:40px;height:40px;border:3px solid var(--border2);border-top-color:var(--orange);border-radius:50%;animation:spin .8s linear infinite}
+.loading p{font-size:14px;color:var(--text2)}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;display:none;align-items:flex-end}
+.overlay.show{display:flex}
+.modal{background:var(--bg2);border-top:1px solid var(--border);border-radius:var(--r) var(--r) 0 0;width:100%;padding:20px 16px 36px}
+.modal h2{font-size:16px;font-weight:600;margin-bottom:6px}
+.modal p{font-size:13px;color:var(--text2);margin-bottom:16px;line-height:1.6}
+.modal-btns{display:flex;gap:8px}
+.modal-btns button{flex:1;padding:12px;border-radius:var(--rs);font-family:'Sarabun',sans-serif;font-size:14px;font-weight:600;cursor:pointer;border:none}
+.mbtn-cancel{background:var(--bg3);color:var(--text2)}
+.mbtn-confirm{background:var(--orange);color:#fff}
+
+.sync-dot{width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block;margin-right:4px}
+.sync-dot.syncing{background:var(--yellow);animation:pulse 1s infinite}
+.sync-dot.error{background:var(--red)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(60px);background:var(--bg2);border:1px solid var(--border2);border-left:3px solid var(--orange);color:var(--text);padding:10px 20px;border-radius:var(--r);font-size:13px;z-index:999;opacity:0;transition:all .25s;white-space:nowrap;pointer-events:none}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+</style>
+</head>
+<body>
+
+<div class="loading" id="loading">
+  <div class="spinner"></div>
+  <p>กำลังเชื่อมต่อ Firebase...</p>
+</div>
+
+<div class="hdr">
+  <div class="hdr-left">
+    <h1>⚔️ ครีปถือดาบ <span class="sync-dot" id="syncDot"></span></h1>
+    <div class="sub" id="lastUpdate">กำลังโหลด...</div>
+  </div>
+  <div class="hdr-right">
+    <button class="btn-sm" onclick="showResetModal()">🔄 รีเซ็ตรอบ</button>
+    <button class="btn-sm btn-orange" onclick="copySum()">📋 สรุป</button>
+  </div>
+</div>
+
+<div class="strip" id="strip">
+  <div class="strip-item"><div class="sv">—</div><div class="sl">พร้อมขาย</div></div>
+  <div class="strip-item"><div class="sv">—</div><div class="sl">เซ็ตรวม</div></div>
+  <div class="strip-item"><div class="sv">—</div><div class="sl">รอบหนาม</div></div>
+  <div class="strip-item"><div class="sv">—</div><div class="sl">แจ้งเตือน</div></div>
+</div>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="showTab('stock',this)">📦 สต็อก</button>
+  <button class="tab-btn" onclick="showTab('thorn',this)">💎 หนาม</button>
+  <button class="tab-btn" onclick="showTab('alert',this)">🔔 แจ้งเตือน</button>
+  <button class="tab-btn" onclick="showTab('calc',this)">🧮 คิดเงิน</button>
+</div>
+
+<div id="p-stock" class="page active">
+  <div class="sec-lbl">🟠 โบราณส้ม — ตัวเด็ก 1–6</div>
+  <div id="creepCards"></div>
+</div>
+
+<div id="p-thorn" class="page">
+  <div class="sec-lbl">💎 หนามคริสตัล — ตัวเด็ก 7</div>
+  <div class="thorn-card" id="thornCard"></div>
+</div>
+
+<div id="p-alert" class="page">
+  <div id="alertSection"></div>
+</div>
+
+<div id="p-calc" class="page">
+  <div class="total-bar">
+    <div><div class="total-lbl">ยอดรวม</div></div>
+    <div class="total-amt" id="grandTotal">0 <span style="font-size:14px;color:var(--text2)">บาท</span></div>
+  </div>
+  <div id="calcItems"></div>
+  <button class="copy-btn" onclick="copyOrder()">📋 คัดลอกสรุปส่งลูกค้า</button>
+</div>
+
+<div class="overlay" id="overlay" onclick="closeModal()">
+  <div class="modal" onclick="event.stopPropagation()">
+    <h2>🔄 รีเซ็ตรอบส่ง</h2>
+    <p>จะรีเซ็ตรอบส่ง (X/10) ทุกตัวเด็กกลับเป็น 10/10<br>สต็อกของจะไม่เปลี่ยนครับ</p>
+    <div class="modal-btns">
+      <button class="mbtn-cancel" onclick="closeModal()">ยกเลิก</button>
+      <button class="mbtn-confirm" onclick="resetRounds()">รีเซ็ตเลย</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- Firebase -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
+import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDtUip5OhtPC3Qnyj6SRNEuI9xaE47_pgA",
+  authDomain: "creep-stock.firebaseapp.com",
+  projectId: "creep-stock",
+  storageBucket: "creep-stock.firebasestorage.app",
+  messagingSenderId: "896850479864",
+  appId: "1:896850479864:web:724a6d21b10247cbef090d",
+  measurementId: "G-QBMLL9Y97J"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const DOC_REF = doc(db, "stock", "main");
+
+// ============ DEFAULT DATA ============
+const DEFAULT = {
+  children:[
+    {id:'c1',name:'ครีปหมายเลข1',setName:'เซ็ตผลงานชิ้นเอกของช่างฝีมือ',costPer200:55,rounds:10,items:[
+      {id:'i1',name:'คทาทองคำ',img:'',qty:0},
+      {id:'i2',name:'เสื้อคลุมเดินกลางคืน',img:'',qty:0},
+      {id:'i3',name:'ธนูยาวปีศาจ',img:'',qty:0}
+    ]},
+    {id:'c2',name:'ครีปหมายเลข2',setName:'เซ็ตสมบัติลับแห่งเผ่า',costPer200:55,rounds:10,items:[
+      {id:'i4',name:'ลูกดอกชนเผ่า',img:'',qty:0},
+      {id:'i5',name:'น้ำพิษร้ายเข้มข้น',img:'',qty:0},
+      {id:'i6',name:'แหล่งชีวิต',img:'',qty:0}
+    ]},
+    {id:'c3',name:'ครีปหมายเลข3',setName:'เซ็ตงูยักษ์ผู้พิทักษ์สมบัติ',costPer200:55,rounds:10,items:[
+      {id:'i7',name:'โต๊ะทองวิจิตร',img:'',qty:0},
+      {id:'i8',name:'งูยักษ์หนองบึง',img:'',qty:0},
+      {id:'i9',name:'โคมไฟสลัว',img:'',qty:0}
+    ]},
+    {id:'c4',name:'ครีปหมายเลข4',setName:'เซ็ตการตกต่ำในฝันที่ถูกกัดกร่อน',costPer200:55,rounds:10,items:[
+      {id:'i10',name:'ค้อนสวดมนต์ฝันกร่อน',img:'',qty:0},
+      {id:'i11',name:'น้ำมนต์ฝันกร่อน',img:'',qty:0},
+      {id:'i12',name:'หินสวดมนต์ฝันกร่อน',img:'',qty:0}
+    ]},
+    {id:'c5',name:'ครีปหมายเลข5',setName:'เซ็ตหลักฐานแห่งความกล้าหาญ',costPer200:55,rounds:10,items:[
+      {id:'i13',name:'ผ้าคลุมไหล่นักรบ',img:'',qty:0},
+      {id:'i14',name:'แหวนหัวหมาป่า',img:'',qty:0},
+      {id:'i15',name:'อัศวินก็อบลิน',img:'',qty:0}
+    ]},
+    {id:'c6',name:'ครีปหมายเลข6',setName:'เซ็ตการเดินทางล่าสมบัติ',costPer200:60,rounds:10,items:[
+      {id:'i16',name:'กล่องสมบัติลับ',img:'',qty:0},
+      {id:'i17',name:'เข็มทิศ',img:'',qty:0},
+      {id:'i18',name:'ผ้าคลุมไหล่แห่งหมอก',img:'',qty:0}
+    ]}
+  ],
+  thorn:{qty:0,rounds:10},
+  lastUpdate: null,
+  lastResetDate: new Date().toDateString()
+}
+
+let S = JSON.parse(JSON.stringify(DEFAULT))
+let saving = false
+
+// ============ FIREBASE SYNC ============
+async function loadFromFirebase() {
+  try {
+    setSyncStatus('syncing')
+    const snap = await getDoc(DOC_REF)
+    if (snap.exists()) {
+      S = snap.data()
+    } else {
+      await setDoc(DOC_REF, DEFAULT)
+      S = JSON.parse(JSON.stringify(DEFAULT))
+    }
+    checkMidnightReset()
+    document.getElementById('loading').style.display = 'none'
+    renderAll()
+    setSyncStatus('ok')
+    // realtime listener
+    onSnapshot(DOC_REF, (snap) => {
+      if (snap.exists() && !saving) {
+        S = snap.data()
+        renderAll()
+        setSyncStatus('ok')
+      }
+    })
+  } catch(e) {
+    console.error(e)
+    setSyncStatus('error')
+    document.getElementById('loading').style.display = 'none'
+    toast('❌ เชื่อมต่อไม่ได้ ตรวจสอบ internet ครับ')
+    renderAll()
+  }
+}
+
+async function saveToFirebase() {
+  try {
+    saving = true
+    setSyncStatus('syncing')
+    S.lastUpdate = new Date().toISOString()
+    await setDoc(DOC_REF, S)
+    setSyncStatus('ok')
+    updateLastUpdate()
+  } catch(e) {
+    setSyncStatus('error')
+    toast('❌ บันทึกไม่ได้ ตรวจสอบ internet ครับ')
+  } finally {
+    saving = false
+  }
+}
+
+function setSyncStatus(s) {
+  const dot = document.getElementById('syncDot')
+  dot.className = 'sync-dot' + (s==='syncing'?' syncing':s==='error'?' error':'')
+}
+
+function updateLastUpdate() {
+  if(!S.lastUpdate) return
+  const d = new Date(S.lastUpdate)
+  document.getElementById('lastUpdate').textContent = 'อัพเดท: '+d.toLocaleString('th-TH',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})
+}
+
+// ============ HELPERS ============
+function setsAvail(c){ return c.items.length ? Math.min(...c.items.map(i=>Math.floor(i.qty/50))) : 0 }
+function totalSets(){ return S.children.reduce((a,c)=>a+setsAvail(c),0) }
+function alertCount(){ return S.children.filter(c=>setsAvail(c)<=2).length + (S.thorn.qty<400?1:0) }
+
+// ============ ACTIONS ============
+window.adj = async (cid,iid,d) => {
+  const c=S.children.find(x=>x.id===cid)
+  const item=c.items.find(x=>x.id===iid)
+  item.qty=Math.max(0,item.qty+d)
+  await saveToFirebase()
+  renderAll()
+  toast((d>0?'+':'')+d+' — '+item.name)
+}
+
+window.sendCreep = async (cid) => {
+  const c=S.children.find(x=>x.id===cid)
+  const inp=document.getElementById('sinp-'+cid)
+  const qty=parseInt(inp.value)||50
+  const rounds=c.items.length
+  if(c.rounds<rounds){ toast('⚠️ รอบส่งไม่พอ เหลือ '+c.rounds+'/10'); return }
+  const minQty=Math.min(...c.items.map(i=>i.qty))
+  if(minQty<qty){ toast('⚠️ สต็อกไม่พอส่ง '+qty+' ชิ้น'); return }
+  c.items.forEach(i=>{ i.qty=Math.max(0,i.qty-qty) })
+  c.rounds=Math.max(0,c.rounds-rounds)
+  inp.value=50
+  await saveToFirebase()
+  renderAll()
+  toast('✅ ส่งแล้ว '+qty+' ชิ้น/ไอเทม (−'+rounds+' รอบ)')
+}
+
+window.thornAdj = async (d) => {
+  S.thorn.qty=Math.max(0,S.thorn.qty+Math.round(d))
+  await saveToFirebase()
+  renderThorn(); renderStrip()
+  toast((d>0?'+':'')+Math.round(d)+' — หนามคริสตัล')
+}
+
+window.thornSend = async () => {
+  if(S.thorn.rounds<1){ toast('⚠️ รอบส่งหมดแล้ว'); return }
+  if(S.thorn.qty<200){ toast('⚠️ หนามไม่พอ 200 ชิ้น'); return }
+  S.thorn.qty-=200; S.thorn.rounds-=1
+  await saveToFirebase()
+  renderThorn(); renderStrip()
+  toast('✅ ส่งหนาม 200 ชิ้น (−1 รอบ)')
+}
+
+window.uploadImg = (cid,iid,input) => {
+  const file=input.files[0]; if(!file) return
+  const reader=new FileReader()
+  reader.onload=async e=>{
+    S.children.find(x=>x.id===cid).items.find(x=>x.id===iid).img=e.target.result
+    await saveToFirebase(); renderAll()
+  }
+  reader.readAsDataURL(file)
+}
+
+window.showResetModal = () => document.getElementById('overlay').classList.add('show')
+window.closeModal = () => document.getElementById('overlay').classList.remove('show')
+window.resetRounds = async () => {
+  S.children.forEach(c=>c.rounds=10)
+  S.thorn.rounds=10
+  await saveToFirebase(); renderAll(); closeModal()
+  toast('🔄 รีเซ็ตรอบแล้วครับ!')
+}
+
+function checkMidnightReset() {
+  const today=new Date().toDateString()
+  if(S.lastResetDate!==today){
+    S.children.forEach(c=>c.rounds=10)
+    S.thorn.rounds=10
+    S.lastResetDate=today
+  }
+}
+
+// ============ RENDER ============
+function renderStrip() {
+  const ok=S.children.filter(c=>setsAvail(c)>=1).length
+  const ts=totalSets()
+  const al=alertCount()
+  const tr=S.thorn.rounds
+  document.getElementById('strip').innerHTML=`
+    <div class="strip-item"><div class="sv ${ok<S.children.length?'warn':'ok'}">${ok}/${S.children.length}</div><div class="sl">พร้อมขาย</div></div>
+    <div class="strip-item"><div class="sv">${ts}</div><div class="sl">เซ็ตรวม</div></div>
+    <div class="strip-item"><div class="sv ${tr<3?'warn':'ok'}">${tr}/10</div><div class="sl">รอบหนาม</div></div>
+    <div class="strip-item"><div class="sv ${al?'danger':'ok'}">${al||'✓'}</div><div class="sl">แจ้งเตือน</div></div>
+  `
+}
+
+function renderCards() {
+  document.getElementById('creepCards').innerHTML=S.children.map(c=>{
+    const sets=setsAvail(c)
+    const sc=sets===0?'s-empty':sets<=2?'s-low':'s-ok'
+    const bc=sets===0?'b-empty':sets<=2?'b-low':'b-ok'
+    const bt=sets===0?'หมด':sets<=2?'ใกล้หมด':'พร้อมขาย'
+    const rClass=c.rounds===0?'empty':c.rounds===10?'full':''
+    const rows=c.items.map(item=>{
+      const qc=item.qty===0?'empty':item.qty<150?'low':''
+      const imgH=item.img?`<img src="${item.img}" alt=""><input type="file" accept="image/*" onchange="uploadImg('${c.id}','${item.id}',this)">`:`🟫<input type="file" accept="image/*" onchange="uploadImg('${c.id}','${item.id}',this)">`
+      return `<div class="irow">
+        <div class="iimg">${imgH}</div>
+        <span class="iname">${item.name}</span>
+        <button class="qb" onclick="adj('${c.id}','${item.id}',-50)">−</button>
+        <span class="iqty ${qc}">${item.qty}</span>
+        <button class="qb" onclick="adj('${c.id}','${item.id}',50)">+</button>
+      </div>`
+    }).join('')
+    return `<div class="ccard ${sc}">
+      <div class="chead">
+        <div><div class="ctitle">${c.name}</div><div class="csub">${c.setName}</div></div>
+        <div class="chead-right">
+          <span class="badge ${bc}">${bt}</span>
+          <span class="rounds-pill ${rClass}">รอบ ${c.rounds}/10</span>
+        </div>
+      </div>
+      ${rows}
+      <div class="cfoot">
+        <div class="cfoot-col"><div class="cfoot-lbl">ส่งได้</div><div class="cfoot-val">${sets} เซ็ต</div></div>
+        <div class="cfoot-col"><div class="cfoot-lbl">ใช้ต่อเซ็ต</div><div class="cfoot-val">${c.items.length} รอบ</div></div>
+      </div>
+      <div class="send-row">
+        <span class="send-lbl">ชิ้นที่ส่ง</span>
+        <input id="sinp-${c.id}" class="send-inp" type="number" value="50" min="1" inputmode="numeric">
+        <button class="send-btn" onclick="sendCreep('${c.id}')">ส่ง ✈</button>
+      </div>
+    </div>`
+  }).join('')
+}
+
+function renderThorn() {
+  const qty=S.thorn.qty
+  const big=Math.floor(qty/100)
+  const sendable=Math.floor(qty/200)
+  const rClass=S.thorn.rounds===0?'empty':S.thorn.rounds===10?'full':''
+  const bClass=qty===0?'b-empty':sendable<2?'b-low':'b-ok'
+  const bText=qty===0?'หมด':sendable<2?'ใกล้หมด':'พร้อมส่ง'
+  document.getElementById('thornCard').innerHTML=`
+    <div class="chead">
+      <div><div class="ctitle">ครีปหมายเลข7</div><div class="csub">ส่งได้รอบละ 200 ชิ้น | 100 ชิ้น = 1 ชิ้นใหญ่</div></div>
+      <div class="chead-right">
+        <span class="badge ${bClass}">${bText}</span>
+        <span class="rounds-pill ${rClass}">รอบ ${S.thorn.rounds}/10</span>
+      </div>
+    </div>
+    <div class="thorn-nums">
+      <div class="thorn-col"><div class="thorn-num">${qty.toLocaleString('th-TH')}</div><div class="thorn-sub">ชิ้นในสต็อก</div></div>
+      <div class="thorn-col"><div class="thorn-num">${big}</div><div class="thorn-sub">ชิ้นใหญ่ที่ได้</div></div>
+      <div class="thorn-col"><div class="thorn-num">${sendable}</div><div class="thorn-sub">รอบส่งได้</div></div>
+    </div>
+    <div class="thorn-actions">
+      <input id="thornAmt" class="thorn-inp" type="number" value="200" min="1" inputmode="numeric">
+      <button class="thorn-btn add" onclick="thornAdj(+document.getElementById('thornAmt').value)">+ รับเข้า</button>
+      <button class="thorn-btn" onclick="thornSend()">✈ ส่ง 1 รอบ (200)</button>
+    </div>
+  `
+}
+
+function renderAlert() {
+  const LOW=2; let html=''
+  const empty=S.children.filter(c=>setsAvail(c)===0)
+  const low=S.children.filter(c=>{const s=setsAvail(c);return s>0&&s<=LOW})
+  const restock=S.children.filter(c=>c.items.some(i=>i.qty<150))
+  const thornLow=S.thorn.qty<400
+  if(empty.length) html+=`<div class="alert-box danger"><div class="ah">🚨 หมดสต็อก — ${empty.length} ตัว</div><div class="ab">${empty.map(c=>`<b>${c.name}</b>: `+c.items.map(i=>i.name+' '+i.qty+'ชิ้น').join(' | ')).join('<br>')}</div></div>`
+  if(low.length) html+=`<div class="alert-box warn"><div class="ah">⚠️ ใกล้หมด — เหลือ ≤${LOW} เซ็ต</div><div class="ab">${low.map(c=>`<b>${c.name}</b>: ${setsAvail(c)} เซ็ต`).join('<br>')}</div></div>`
+  if(restock.length) html+=`<div class="alert-box warn"><div class="ah">📦 ควรเติมสต็อก — ต่ำกว่า 150 ชิ้น</div><div class="ab">${restock.map(c=>`<b>${c.name}</b>: `+c.items.filter(i=>i.qty<150).map(i=>i.name+' ('+i.qty+')').join(', ')).join('<br>')}</div></div>`
+  if(thornLow) html+=`<div class="alert-box warn"><div class="ah">💎 หนามคริสตัลต่ำ — เหลือ ${S.thorn.qty} ชิ้น</div><div class="ab">ส่งได้อีก ${Math.floor(S.thorn.qty/200)} รอบ ควรเติมให้ได้ 400+ ชิ้น</div></div>`
+  if(!html) html=`<div class="alert-box ok"><div class="ah">✅ สต็อกทุกตัวปกติ ไม่มีแจ้งเตือน</div></div>`
+  document.getElementById('alertSection').innerHTML=html
+}
+
+const CALC_ITEMS=[
+  {id:'bos',emoji:'🏆',name:'โบส้มเลือก',rate:0.25},
+  {id:'com',emoji:'🧭',name:'โบส้มเข็มทิศ',rate:0.14},
+  {id:'thorn',emoji:'🌵',name:'หนามคริสตัล',rate:0.15},
+  {id:'egg',emoji:'🥚',name:'ไข่',rate:50},
+  {id:'wing',emoji:'🪶',name:'ปีก',rate:10},
+  {id:'fash',emoji:'👕',name:'แฟชั่น',rate:600},
+  {id:'staff',emoji:'🎀',name:'ไม้เท้า',rate:2},
+  {id:'crown',emoji:'👑',name:'มงกุฎ',rate:2},
+  {id:'sage',emoji:'🧙',name:'ปราชญ์',rate:1},
+]
+
+function renderCalc() {
+  document.getElementById('calcItems').innerHTML=CALC_ITEMS.map(item=>`
+    <div class="calc-item">
+      <div class="calc-main">
+        <div>
+          <div class="calc-name">${item.emoji} ${item.name}</div>
+          <div class="calc-rate">เรท <input type="number" id="rate_${item.id}" value="${item.rate}" step="0.01" oninput="calcTotal()"> บาท/ชิ้น</div>
+        </div>
+        <div class="calc-qty-wrap">
+          <input class="calc-qty" type="number" id="qty_${item.id}" placeholder="0" inputmode="numeric" oninput="calcTotal()">
+          <div class="calc-ql">ชิ้น</div>
+        </div>
+        <div class="calc-sub">
+          <div class="amt" id="sub_${item.id}">—</div>
+          <div class="unit">บาท</div>
+        </div>
+      </div>
+    </div>`).join('')
+}
+
+window.calcTotal = () => {
+  let grand=0
+  CALC_ITEMS.forEach(item=>{
+    const qty=parseFloat(document.getElementById('qty_'+item.id)?.value)||0
+    const rate=parseFloat(document.getElementById('rate_'+item.id)?.value)||0
+    const sub=qty*rate
+    const el=document.getElementById('sub_'+item.id)
+    if(el){ el.textContent=qty>0?fmt(sub):'—'; el.className='amt'+(qty>0?' active':'') }
+    grand+=sub
+  })
+  document.getElementById('grandTotal').innerHTML=fmt(grand)+' <span style="font-size:14px;color:var(--text2)">บาท</span>'
+}
+
+window.copyOrder = () => {
+  let grand=0; let lines=['📋 สรุปรายการครับ']
+  CALC_ITEMS.forEach(item=>{
+    const qty=parseFloat(document.getElementById('qty_'+item.id)?.value)||0
+    const rate=parseFloat(document.getElementById('rate_'+item.id)?.value)||0
+    if(qty>0){ const sub=qty*rate; grand+=sub; lines.push(item.emoji+' '+item.name+' : '+rate+' x '+fmt(qty)+' = '+fmt(sub)) }
+  })
+  if(grand===0){ toast('⚠️ ยังไม่ได้กรอกจำนวนครับ'); return }
+  lines.push('💰 ยอดรวม : '+fmt(grand))
+  navigator.clipboard.writeText(lines.join('\n')).then(()=>toast('📋 คัดลอกแล้วครับ!')).catch(()=>toast('❌ คัดลอกไม่ได้'))
+}
+
+function fmt(n){ if(n===0)return'0'; if(Number.isInteger(n))return n.toLocaleString('th-TH'); return parseFloat(n.toFixed(2)).toLocaleString('th-TH') }
+
+window.copySum = () => {
+  const now=new Date().toLocaleString('th-TH',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})
+  let txt='⚔️ ครีปถือดาบ — สรุปสต็อก '+now+'\n\n'
+  txt+='🟠 โบราณส้ม\n'
+  S.children.forEach(c=>{ const sets=setsAvail(c); txt+=c.name+': '+sets+' เซ็ต | รอบ '+c.rounds+'/10'+(sets===0?' ⚠️ หมด':sets<=2?' ⚠️ ใกล้หมด':'')+'\n'; c.items.forEach(i=>{ txt+='  • '+i.name+': '+i.qty+' ชิ้น\n' }) })
+  txt+='\n💎 หนามคริสตัล: '+S.thorn.qty+' ชิ้น | รอบ '+S.thorn.rounds+'/10\n'
+  txt+='\n📊 เซ็ตรวม: '+totalSets()+' เซ็ต'
+  navigator.clipboard.writeText(txt).then(()=>toast('📋 คัดลอกแล้วครับ!')).catch(()=>toast('❌ คัดลอกไม่ได้'))
+}
+
+window.showTab = (name,btn) => {
+  document.querySelectorAll('.tab-btn').forEach(t=>t.classList.remove('active'))
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'))
+  btn.classList.add('active')
+  document.getElementById('p-'+name).classList.add('active')
+}
+
+let tt
+window.toast = (msg) => {
+  const el=document.getElementById('toast')
+  el.textContent=msg; el.classList.add('show')
+  clearTimeout(tt); tt=setTimeout(()=>el.classList.remove('show'),2200)
+}
+
+function renderAll() { renderStrip(); renderCards(); renderThorn(); renderAlert(); renderCalc(); updateLastUpdate() }
+
+loadFromFirebase()
+</script>
+</body>
+</html>
