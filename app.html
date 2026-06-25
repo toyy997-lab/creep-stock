@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- saved from url=(0042)file:///C:/Users/Toys/Downloads/app_3.html -->
+<!-- saved from url=(0042)file:///C:/Users/Toys/Downloads/app_4.html -->
 <html lang="th"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
@@ -391,6 +391,31 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--text);min
           กำไร 40 ฿ (40%)
         </span>
         <button class="del-btn" onclick="delMainItem(&#39;m4&#39;)">🗑</button>
+      </div><div class="irow" style="grid-template-columns:26px 1fr 65px 38px 26px">
+        <span style="font-size:16px;text-align:center">📦</span>
+        <div style="min-width:0">
+          <div class="iname">ไอเทมใหม่</div>
+          <div style="font-size:10px;color:var(--text3)">ชิ้น</div>
+        </div>
+        <input class="iqty crisis" type="number" value="0" min="0" inputmode="numeric" onchange="setMainQty(&#39;m1782418215258&#39;,+this.value)" onfocus="this.select()">
+        <input class="sinp" type="number" value="1" min="1" id="msinp-m1782418215258" inputmode="numeric" style="width:36px">
+        <button class="sbtn" onclick="sendMainItem(&#39;m1782418215258&#39;)">✈</button>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:3px;padding:5px 8px;background:var(--bg3);border-bottom:1px solid var(--border)">
+        <div><div style="font-size:9px;color:var(--text3);margin-bottom:2px">ต้นทุน/ชุด</div>
+          <input style="width:100%;background:var(--bg2);border:1px solid var(--border2);border-radius:4px;color:var(--text);font-size:12px;font-weight:600;text-align:center;padding:3px 2px;font-family:Sarabun,sans-serif" type="number" value="0" onchange="updMainField(&#39;m1782418215258&#39;,&#39;buyPrice&#39;,+this.value)"></div>
+        <div><div style="font-size:9px;color:var(--green);margin-bottom:2px">ราคาขาย/ชุด</div>
+          <input style="width:100%;background:var(--bg2);border:1px solid var(--border2);border-radius:4px;color:var(--green);font-size:12px;font-weight:600;text-align:center;padding:3px 2px;font-family:Sarabun,sans-serif" type="number" value="0" onchange="updMainField(&#39;m1782418215258&#39;,&#39;sellPrice&#39;,+this.value)"></div>
+        <div><div style="font-size:9px;color:var(--yellow);margin-bottom:2px">Cut Loss</div>
+          <input style="width:100%;background:var(--bg2);border:1px solid var(--border2);border-radius:4px;color:var(--yellow);font-size:12px;font-weight:600;text-align:center;padding:3px 2px;font-family:Sarabun,sans-serif" type="number" value="0" onchange="updMainField(&#39;m1782418215258&#39;,&#39;cutLoss&#39;,+this.value)"></div>
+        <div><div style="font-size:9px;color:var(--text3);margin-bottom:2px">ชิ้น/ชุด</div>
+          <input style="width:100%;background:var(--bg2);border:1px solid var(--border2);border-radius:4px;color:var(--text);font-size:12px;font-weight:600;text-align:center;padding:3px 2px;font-family:Sarabun,sans-serif" type="number" value="" placeholder="-" onchange="updMainField(&#39;m1782418215258&#39;,&#39;unitQty&#39;,+this.value)"></div>
+      </div>
+      <div style="padding:5px 10px;background:var(--bg3);border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:12px;color:var(--yellow)">
+          กำไร 0 ฿ (0%)
+        </span>
+        <button class="del-btn" onclick="delMainItem(&#39;m1782418215258&#39;)">🗑</button>
       </div>
   </div></div>
   <div class="sec-hdr" style="margin-top:8px">
@@ -742,6 +767,15 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--text);min
           </div>
         </div>
       </div>
+      <div class="sell-card">
+        <div class="sell-head">
+          <div><span style="font-size:15px">📦</span> <span style="font-size:14px;font-weight:600">ไอเทมใหม่</span></div>
+          <div style="text-align:right">
+            <div class="sell-price">0 ฿/ชิ้น</div>
+            <div style="font-size:11px;color:var(--text3)">0 ชิ้น ในสต็อก</div>
+          </div>
+        </div>
+      </div>
     <div style="font-size:12px;color:var(--text3);margin:10px 0 8px">🟠 โบราณส้ม</div>
     <div class="sell-card">
         <div class="sell-head">
@@ -926,18 +960,21 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--text);min
 </div>
 
 <!-- ALERT -->
-<div id="p-alert" class="page"><div id="alertSection"><div class="alert-box warn"><div class="ah">⚠️ ไอเทมตัวหลักใกล้หมด</div><div class="ab">🪶 <b>ปีก</b>: 2 ชุด(100ชิ้น)</div></div></div></div>
+<div id="p-alert" class="page"><div id="alertSection"><div class="alert-box warn"><div class="ah">⚠️ ไอเทมตัวหลักใกล้หมด</div><div class="ab">🪶 <b>ปีก</b>: 2 ชุด(100ชิ้น)<br>📦 <b>ไอเทมใหม่</b>: 0 ชิ้น</div></div></div></div>
 
 <!-- CALC -->
 <div id="p-calc" class="page">
-  <div class="total-bar">
-    <div class="total-lbl">ยอดรวมขาย</div>
-    <div class="total-amt" id="gtSell">74 <span style="font-size:12px;color:var(--text2)">฿</span></div>
+  <div style="display:flex;gap:6px;margin-bottom:6px">
+    <div class="total-bar" style="flex:1;margin-bottom:0">
+      <div class="total-lbl">ยอดรวมขาย</div>
+      <div class="total-amt" id="gtSell">74 <span style="font-size:12px;color:var(--text2)">฿</span></div>
+    </div>
+    <div class="total-bar" style="flex:1;margin-bottom:0">
+      <div class="total-lbl">ยอดรวมซื้อ</div>
+      <div class="total-amt" style="color:var(--blue)" id="gtBuy">84.2 <span style="font-size:12px;color:var(--text2)">฿</span></div>
+    </div>
   </div>
-  <div class="total-bar" style="margin-top:-2px">
-    <div class="total-lbl">ยอดรวมซื้อ</div>
-    <div class="total-amt" style="color:var(--blue)" id="gtBuy">84.2 <span style="font-size:12px;color:var(--text2)">฿</span></div>
-  </div>
+  <button style="width:100%;background:var(--red-dim);border:1px solid var(--red);border-radius:var(--rs);color:var(--red);font-family:Sarabun,sans-serif;font-size:13px;font-weight:600;padding:8px;cursor:pointer;margin-bottom:8px" onclick="clearCalcQty()">🗑 เคลียร์ยอด (รับลูกค้าคนต่อไป)</button>
   <div class="calc-hdr"><span></span><span></span><span style="text-align:center">ซื้อ</span><span style="text-align:center">ขาย</span><span style="text-align:center">จำนวน</span><span style="text-align:right">รวมขาย</span></div>
   <div id="calcItems">
     <div class="calc-item">
@@ -1031,7 +1068,7 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--text);min
     <div class="calc-item">
       <div class="calc-row">
         <span class="cemoji" onclick="const e=prompt(&#39;อีโมจิ:&#39;);if(e){updC(&#39;ca1782357678437&#39;,&#39;emoji&#39;,e.trim());this.textContent=e.trim();}">🍊</span>
-        <input class="cname" value="ส้ม ผ้าคลุม" onchange="updC(&#39;ca1782357678437&#39;,&#39;name&#39;,this.value)">
+        <input class="cname" value="ส้ม เซ็ตเข็มทิศ" onchange="updC(&#39;ca1782357678437&#39;,&#39;name&#39;,this.value)">
         <input class="crate" type="number" value="0.1" step="0.01" onchange="updC(&#39;ca1782357678437&#39;,&#39;buyRate&#39;,this.value)">
         <input class="crate" type="number" value="0" step="0.01" onchange="updC(&#39;ca1782357678437&#39;,&#39;sellRate&#39;,this.value)">
         <input class="cqty" type="number" value="" placeholder="0" inputmode="numeric" onchange="updC(&#39;ca1782357678437&#39;,&#39;qty&#39;,this.value);calcTotal()">
@@ -1150,7 +1187,59 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--text);min
     <button class="btn-sm btn-or" style="width:100%;padding:10px" onclick="addChild()">+ เพิ่มตัวเด็ก</button>
   </div>
 
-  <div id="manageCards">
+  <div id="manageCards"><div class="mc" style="border-color:var(--orange)">
+    <h3 style="color:var(--orange)">💰 ราคาขายโบส้ม/เซ็ต (แก้ด่วน)</h3>
+    
+      <div class="settings-row">
+        <span class="settings-label" style="font-size:12px">ครีปหมายเลข1</span>
+        <div style="display:flex;align-items:center;gap:4px">
+          <input class="settings-inp" type="number" value="80" onchange="updCSellPrice(&#39;c1&#39;,+this.value)" style="width:60px">
+          <span style="font-size:11px;color:var(--text3)">฿/เซ็ต</span>
+        </div>
+      </div>
+      <div class="settings-row">
+        <span class="settings-label" style="font-size:12px">ครีปหมายเลข2</span>
+        <div style="display:flex;align-items:center;gap:4px">
+          <input class="settings-inp" type="number" value="80" onchange="updCSellPrice(&#39;c2&#39;,+this.value)" style="width:60px">
+          <span style="font-size:11px;color:var(--text3)">฿/เซ็ต</span>
+        </div>
+      </div>
+      <div class="settings-row">
+        <span class="settings-label" style="font-size:12px">ครีปหมายเลข3</span>
+        <div style="display:flex;align-items:center;gap:4px">
+          <input class="settings-inp" type="number" value="80" onchange="updCSellPrice(&#39;c3&#39;,+this.value)" style="width:60px">
+          <span style="font-size:11px;color:var(--text3)">฿/เซ็ต</span>
+        </div>
+      </div>
+      <div class="settings-row">
+        <span class="settings-label" style="font-size:12px">ครีปหมายเลข4</span>
+        <div style="display:flex;align-items:center;gap:4px">
+          <input class="settings-inp" type="number" value="80" onchange="updCSellPrice(&#39;c4&#39;,+this.value)" style="width:60px">
+          <span style="font-size:11px;color:var(--text3)">฿/เซ็ต</span>
+        </div>
+      </div>
+      <div class="settings-row">
+        <span class="settings-label" style="font-size:12px">ครีปหมายเลข5</span>
+        <div style="display:flex;align-items:center;gap:4px">
+          <input class="settings-inp" type="number" value="80" onchange="updCSellPrice(&#39;c5&#39;,+this.value)" style="width:60px">
+          <span style="font-size:11px;color:var(--text3)">฿/เซ็ต</span>
+        </div>
+      </div>
+      <div class="settings-row">
+        <span class="settings-label" style="font-size:12px">ครีปหมายเลข6</span>
+        <div style="display:flex;align-items:center;gap:4px">
+          <input class="settings-inp" type="number" value="80" onchange="updCSellPrice(&#39;c6&#39;,+this.value)" style="width:60px">
+          <span style="font-size:11px;color:var(--text3)">฿/เซ็ต</span>
+        </div>
+      </div>
+      <div class="settings-row">
+        <span class="settings-label" style="font-size:12px">ครีปหมายเลข7</span>
+        <div style="display:flex;align-items:center;gap:4px">
+          <input class="settings-inp" type="number" value="80" onchange="updCSellPrice(&#39;xNaN&#39;,+this.value)" style="width:60px">
+          <span style="font-size:11px;color:var(--text3)">฿/เซ็ต</span>
+        </div>
+      </div>
+  </div>
     <div class="mc">
       <h3>
         <input class="minp" value="ครีปหมายเลข1" style="font-weight:600;font-size:13px" onchange="updCN(&#39;c1&#39;,this.value)">
@@ -1576,6 +1665,10 @@ window.delLog=(lid)=>{verifyPin(async()=>{S.logs=S.logs.filter(x=>x.id!==lid);aw
 window.clearLogs=()=>{verifyPin(async()=>{if(!confirm('ล้าง log ทั้งหมด?'))return;S.logs=[];await save();renderLog();toast('🗑 ล้าง log แล้วครับ');});};
 
 // CALC
+window.clearCalcQty=()=>{
+  SC.items.forEach(item=>item.qty=0);
+  saveC();renderCalc();toast('🗑 เคลียร์ยอดแล้ว รับลูกค้าคนต่อไปได้เลยครับ!');
+};
 window.addCalcItem=async()=>{SC.items.push({id:'ca'+Date.now(),emoji:'📦',name:'ใหม่',buyRate:0,sellRate:0,qty:0});await saveC();renderCalc();};
 window.delCalcItem=(id)=>{verifyPin(async()=>{SC.items=SC.items.filter(x=>x.id!==id);await saveC();renderCalc();});};
 window.updC=(id,field,val)=>{
@@ -1969,7 +2062,20 @@ function renderLog(){
 }
 
 function renderManage(){
-  document.getElementById('manageCards').innerHTML=S.children.map(c=>`
+  // ราคาโบส้มต่อเซ็ต
+  const priceCard=`<div class="mc" style="border-color:var(--orange)">
+    <h3 style="color:var(--orange)">💰 ราคาขายโบส้ม/เซ็ต (แก้ด่วน)</h3>
+    ${S.children.map(c=>`
+      <div class="settings-row">
+        <span class="settings-label" style="font-size:12px">${c.name}</span>
+        <div style="display:flex;align-items:center;gap:4px">
+          <input class="settings-inp" type="number" value="${c.sellPrice||80}" onchange="updCSellPrice('${c.id}',+this.value)" style="width:60px">
+          <span style="font-size:11px;color:var(--text3)">฿/เซ็ต</span>
+        </div>
+      </div>`).join('')}
+  </div>`;
+
+  document.getElementById('manageCards').innerHTML=priceCard+S.children.map(c=>`
     <div class="mc">
       <h3>
         <input class="minp" value="${c.name}" style="font-weight:600;font-size:13px" onchange="updCN('${c.id}',this.value)">
@@ -1988,6 +2094,12 @@ function renderManage(){
       <button class="add-c-btn" onclick="addItem('${c.id}')">+ เพิ่มไอเทม</button>
     </div>`).join('');
 }
+
+window.updCSellPrice=async(cid,val)=>{
+  S.children.find(x=>x.id===cid).sellPrice=val;
+  clearTimeout(calcTm);calcTm=setTimeout(()=>save(),600);
+  toast('✅ แก้ราคาขายแล้วครับ');
+};
 
 function renderAll(){renderStrip();renderMainItems();renderCards();renderSell();renderAlert();renderCalc();renderLog();renderManage();upd();}
 loadFB();
