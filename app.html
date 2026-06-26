@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- saved from url=(0042)file:///C:/Users/Toys/Downloads/app_5.html -->
+<!-- saved from url=(0042)file:///C:/Users/Toys/Downloads/app_6.html -->
 <html lang="th"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
@@ -694,8 +694,8 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--text);min
         <button class="sbtn" onclick="sendItem(&#39;xNaN&#39;,&#39;xNaN&#39;)" title="ส่ง">✈</button>
       </div>
       <div class="cfoot">
-        <div class="cfoot-col"><div class="cfoot-lbl">ส่งเต็มรอบได้</div><div class="cfoot-val">11 รอบ</div></div>
-             <div class="cfoot-col"><div class="cfoot-lbl">เหลือ (หาร 200)</div><div class="cfoot-val">2210 ÷ 200</div></div>
+        <div class="cfoot-col"><div class="cfoot-lbl">ส่งเต็มรอบได้</div><div class="cfoot-val">11 รอบ (10 ชิ้นเหลือ)</div></div>
+             <div class="cfoot-col"><div class="cfoot-lbl">รอบส่งวันนี้</div><div class="cfoot-val">10/10</div></div>
       </div>
     </div></div>
 </div>
@@ -1923,8 +1923,8 @@ function renderCards(){
       ${rows}
       <div class="cfoot">
         ${c.items.length===1
-          ? `<div class="cfoot-col"><div class="cfoot-lbl">ส่งเต็มรอบได้</div><div class="cfoot-val">${Math.floor(c.items[0].qty/200)} รอบ</div></div>
-             <div class="cfoot-col"><div class="cfoot-lbl">เหลือ (หาร 200)</div><div class="cfoot-val">${c.items[0].qty} ÷ 200</div></div>`
+          ? `<div class="cfoot-col"><div class="cfoot-lbl">ส่งเต็มรอบได้</div><div class="cfoot-val">${Math.floor(c.items[0].qty/200)} รอบ (${c.items[0].qty%200} ชิ้นเหลือ)</div></div>
+             <div class="cfoot-col"><div class="cfoot-lbl">รอบส่งวันนี้</div><div class="cfoot-val">${c.rounds}/10</div></div>`
           : `<div class="cfoot-col"><div class="cfoot-lbl">ส่งได้</div><div class="cfoot-val">${sets} เซ็ต</div></div>
              <div class="cfoot-col"><div class="cfoot-lbl">รอบคงเหลือ</div><div class="cfoot-val">${c.rounds}/10</div></div>`
         }
