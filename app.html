@@ -819,6 +819,8 @@ window.updMainItemName=async(id,val)=>{
   const item=SM.items.find(x=>x.id===id);if(!item)return;
   item.name=val;clearTimeout(calcTm);calcTm=setTimeout(()=>saveM(),800);
 };
+
+window.adjMainCreepRounds=async(d)=>{
   if(!S.mainCreepRounds&&S.mainCreepRounds!==0)S.mainCreepRounds=10;
   S.mainCreepRounds=Math.min(10,Math.max(0,S.mainCreepRounds+d));
   addLog((d>0?'คืน':'หัก')+' 1 รอบ — ครีปถือดาบ (เหลือ '+S.mainCreepRounds+'/10)','round');
