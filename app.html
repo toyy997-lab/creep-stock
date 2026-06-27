@@ -434,7 +434,13 @@ const DEF3={items:[
 let S=JSON.parse(JSON.stringify(DEF));
 let SC=JSON.parse(JSON.stringify(DEF2));
 let SM=JSON.parse(JSON.stringify(DEF3));
-let saving=false,toastTm,calcTm,sortMode='default';
+window._saving=false;
+let toastTm,calcTm,sortMode='default';
+
+Object.defineProperty(window,'saving',{
+  get(){return window._saving;},
+  set(v){window._saving=v;}
+});
 
 // FIREBASE
 async function loadFB(){
