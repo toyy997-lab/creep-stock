@@ -834,8 +834,14 @@ window.adjMainCreepRounds=async(d)=>{
   if(!S.mainCreepRounds&&S.mainCreepRounds!==0)S.mainCreepRounds=10;
   S.mainCreepRounds=Math.min(10,Math.max(0,S.mainCreepRounds+d));
   addLog((d>0?'คืน':'หัก')+' 1 รอบ — ครีปถือดาบ (เหลือ '+S.mainCreepRounds+'/10)','round');
-  await save();renderMainItems();renderStrip();
+  saving=true;
+  setSync('syncing');
+  S.lastUpdate=new Date().toISOString();
+  await setDoc(DR,S);
+  setSync('ok');upd();
+  renderMainItems();renderStrip();
   toast((d>0?'คืน':'หัก')+' 1 รอบ ครีปถือดาบ');
+  setTimeout(()=>{saving=false;},2000);
 };
 
 window.sendMainItem=async(id)=>{
@@ -1024,10 +1030,9 @@ function renderManage(){
   <div class="mc" style="border-color:var(--purple)">
     <h3 style="color:var(--purple)">⭐ จัดการไอเทมตัวหลัก</h3>
     ${(SM.items||[]).map(item=>`
-      <div class="mrow">
-        <span style="font-size:14px">${item.emoji}</span>
-        <input class="minp" value="${item.name}" onchange="updMainItemName('${item.id}',this.value)" style="flex:1">
-        <input class="minp" value="${item.unit||'ชิ้น'}" onchange="updMainField('${item.id}','unit',this.value)" style="width:80px">
+      <div class="mrow" style="grid-template-columns:auto 1fr auto">
+        <span style="font-size:20px;cursor:pointer;padding:0 4px" onclick="const e=prompt('อีโมจิใหม่:');if(e){updMainField('${item.id}','emoji',e.trim());renderManage();}" title="กดเพื่อเปลี่ยนอีโมจิ">${item.emoji}</span>
+        <input class="minp" value="${item.name}" onchange="updMainItemName('${item.id}',this.value)">
         <button class="del-btn" onclick="delMainItem('${item.id}')">🗑</button>
       </div>`).join('')}
     <button class="add-c-btn" onclick="addMainItem()">+ เพิ่มไอเทมตัวหลัก</button>
