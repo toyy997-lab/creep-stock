@@ -459,7 +459,8 @@ async function loadFB(){
 
 async function save(){
   try{saving=true;setSync('syncing');S.lastUpdate=new Date().toISOString();await setDoc(DR,S);setSync('ok');upd();}
-  catch(e){setSync('error');toast('❌ บันทึกไม่ได้');}finally{saving=false;}
+  catch(e){setSync('error');toast('❌ บันทึกไม่ได้');}
+  finally{setTimeout(()=>{saving=false;},2000);}
 }
 async function saveC(){try{await setDoc(DR2,SC);}catch(e){toast('❌ บันทึกไม่ได้');}}
 async function saveM(){try{await setDoc(DR3,SM);}catch(e){toast('❌ บันทึกไม่ได้');}}
