@@ -507,6 +507,15 @@ window.setQty=async(cid,iid,val)=>{
   await save();renderAll();toast('✅ '+item.name+' = '+item.qty+' ชิ้น');
 };
 
+window.sendItemQty=async(cid,iid,qty)=>{
+  const c=S.children.find(x=>x.id===cid),item=c.items.find(x=>x.id===iid);
+  if(c.rounds<1){toast('⚠️ รอบส่งหมดแล้ว');return;}
+  if(item.qty<qty){toast('⚠️ '+item.name+' มีแค่ '+item.qty+' ชิ้น');return;}
+  item.qty-=qty;c.rounds=Math.max(0,c.rounds-1);
+  addLog('✈ ส่ง '+item.name+' '+qty+' ชิ้น — '+c.name+' (เหลือ '+c.rounds+'/10)','send');
+  await save();renderAll();toast('✅ ส่ง '+item.name+' '+qty+' ชิ้น');
+};
+
 window.sendItem=async(cid,iid)=>{
   const c=S.children.find(x=>x.id===cid),item=c.items.find(x=>x.id===iid);
   const qty=parseInt(document.getElementById('sinp-'+cid+'-'+iid)?.value)||50;
@@ -850,12 +859,21 @@ function renderCards(){
     const rows=c.items.map(item=>{
       const qc=item.qty<=crisis?'crisis':item.qty<=low?'low':'';
       const imgH=item.img?`<img src="${item.img}" alt=""><input type="file" accept="image/*" onchange="uploadImg('${c.id}','${item.id}',this)">`:`🟫<input type="file" accept="image/*" onchange="uploadImg('${c.id}','${item.id}',this)">`;
-      return `<div class="irow">
+      return `<div class="irow" style="grid-template-columns:30px 1fr auto">
         <div class="iimg">${imgH}</div>
-        <span class="iname">${item.name}</span>
-        <input class="iqty ${qc}" type="number" value="${item.qty}" min="0" inputmode="numeric" onchange="setQty('${c.id}','${item.id}',+this.value)" onfocus="this.select()">
-        <input id="sinp-${c.id}-${item.id}" class="sinp" type="number" value="50" min="1" inputmode="numeric">
-        <button class="sbtn" onclick="sendItem('${c.id}','${item.id}')" title="ส่ง">✈</button>
+        <div style="min-width:0">
+          <span class="iname">${item.name}</span>
+          <div style="display:flex;gap:3px;margin-top:4px;flex-wrap:wrap">
+            ${[50,100,150,200].map(n=>`<button onclick="sendItemQty('${c.id}','${item.id}',${n})" style="background:var(--bg3);border:1px solid var(--border2);border-radius:4px;color:var(--text2);font-family:Sarabun,sans-serif;font-size:11px;padding:2px 7px;cursor:pointer;flex-shrink:0" onmousedown="this.style.background='var(--orange)';this.style.color='#fff'" onmouseup="this.style.background='var(--bg3)';this.style.color='var(--text2)'">${n}</button>`).join('')}
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+          <input class="iqty ${qc}" type="number" value="${item.qty}" min="0" inputmode="numeric" onchange="setQty('${c.id}','${item.id}',+this.value)" onfocus="this.select()" style="width:70px">
+          <div style="display:flex;gap:3px;align-items:center">
+            <input id="sinp-${c.id}-${item.id}" class="sinp" type="number" placeholder="?" min="1" inputmode="numeric" style="width:44px">
+            <button class="sbtn" onclick="sendItem('${c.id}','${item.id}')" title="ส่ง">✈</button>
+          </div>
+        </div>
       </div>`;
     }).join('');
     return `<div class="ccard ${sc}">
