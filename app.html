@@ -884,7 +884,7 @@ function renderMainItems(){
     </div>
     ${(SM.items||[]).map(item=>{
       const qc=item.qty<=crisis?'crisis':item.qty<=low?'low':'';
-      const imgH=item.img?`<img src="${item.img}" alt="">`:`<span style="font-size:14px">${item.emoji}</span>`;
+      const imgH=item.img?`<img src="${item.img}" alt=""><input type="file" accept="image/*" onchange="uploadMainImg('${item.id}',this)">`:`<span style="font-size:14px">${item.emoji}</span><input type="file" accept="image/*" onchange="uploadMainImg('${item.id}',this)">`;
       return `<div class="irow">
         <div class="iimg">${imgH}</div>
         <span class="iname">${item.name}<br><span style="font-size:10px;color:var(--text3)">${item.unit||'ชิ้น'}</span></span>
@@ -905,6 +905,29 @@ function renderMainItems(){
 window.updMainItemName=async(id,val)=>{
   const item=SM.items.find(x=>x.id===id);if(!item)return;
   item.name=val;clearTimeout(calcTm);calcTm=setTimeout(()=>saveM(),800);
+};
+
+// อัพโหลดรูปไอเทมตัวหลัก — เหมือนของตัวเด็ก (uploadImg) ทุกอย่าง แค่เซฟลง SM แทน S
+window.uploadMainImg=(id,input)=>{
+  const f=input.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onerror=()=>toast('❌ อ่านไฟล์ไม่สำเร็จ ลองใหม่อีกครั้งครับ');
+  r.onload=e=>{
+    const i=new Image();
+    i.onerror=()=>toast('❌ อัพรูปไม่สำเร็จ — ไฟล์รูปอาจเสียหรือฟอร์แมตไม่รองรับ (ลองเป็น .jpg/.png)');
+    i.onload=async()=>{
+      try{
+        const cv=document.createElement('canvas');cv.width=80;cv.height=80;cv.getContext('2d').drawImage(i,0,0,80,80);
+        const item=SM.items.find(x=>x.id===id);
+        if(!item){toast('❌ หาไอเทมนี้ไม่เจอ');return;}
+        item.img=cv.toDataURL('image/jpeg',0.7);
+        await saveM();renderMainItems();toast('✅ บันทึกรูปแล้ว!');
+      }catch(err){toast('❌ บันทึกรูปไม่สำเร็จ: '+(err&&err.message||'unknown error'));}
+    };
+    i.src=e.target.result;
+  };
+  r.readAsDataURL(f);
+  input.value='';
 };
 
 window.adjMainCreepRounds=async(d)=>{
