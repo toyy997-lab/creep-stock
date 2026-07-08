@@ -193,7 +193,7 @@ async function save(){
 
 function setSync(s){const d=document.getElementById('syncDot');d.className='sync-dot'+(s==='syncing'?' syncing':s==='error'?' error':'');}
 
-function uid(){return 'item'+Date.now()+Math.floor(Math.random()*1000);}
+function uid(){let id;do{id='item'+Date.now()+Math.floor(Math.random()*1000);}while(items.some(x=>x.id===id));return id;}
 
 window.addItem=async()=>{
   const name=document.getElementById('newName').value.trim();
@@ -246,14 +246,24 @@ window.closeEdit=()=>{
 window.uploadImg=(id,input)=>{
   const f=input.files[0];if(!f)return;
   const r=new FileReader();
+  r.onerror=()=>toast('❌ อ่านไฟล์ไม่สำเร็จ ลองใหม่อีกครั้งครับ');
   r.onload=e=>{
-    const i=new Image();i.onload=async()=>{
-      const cv=document.createElement('canvas');cv.width=120;cv.height=120;
-      cv.getContext('2d').drawImage(i,0,0,120,120);
-      const item=items.find(x=>x.id===id);if(item)item.img=cv.toDataURL('image/jpeg',0.7);
-      await save();renderAll();toast('✅ อัพรูปแล้วครับ!');
-    };i.src=e.target.result;
-  };r.readAsDataURL(f);
+    const i=new Image();
+    i.onerror=()=>toast('❌ อัพรูปไม่สำเร็จ — ไฟล์รูปอาจเสียหรือฟอร์แมตไม่รองรับ (ลองเป็น .jpg/.png)');
+    i.onload=async()=>{
+      try{
+        const cv=document.createElement('canvas');cv.width=120;cv.height=120;
+        cv.getContext('2d').drawImage(i,0,0,120,120);
+        const item=items.find(x=>x.id===id);
+        if(!item){toast('❌ หาไอเทมนี้ไม่เจอ');return;}
+        item.img=cv.toDataURL('image/jpeg',0.7);
+        await save();renderAll();toast('✅ อัพรูปแล้วครับ!');
+      }catch(err){toast('❌ อัพรูปไม่สำเร็จ: '+(err&&err.message||'unknown error'));}
+    };
+    i.src=e.target.result;
+  };
+  r.readAsDataURL(f);
+  input.value='';
 };
 
 window.filterCat=(cat)=>{activeCat=cat;renderGrid();renderCatTabs();};
