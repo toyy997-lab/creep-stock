@@ -1108,7 +1108,7 @@ window.pickLibItem=async(cid,libId)=>{
   if(!libItem)return;
   const c=S.children.find(x=>x.id===cid);
   if(!c)return;
-  c.items.push({id:uid(),name:libItem.name,img:libItem.img||'',qty:0,_libId:libId});
+  c.items.push({id:uid(),name:libItem.name,img:libItem.img||'',qty:0});
   await save();renderAll();closeLibPicker();
   toast('✅ เพิ่ม '+libItem.name+' แล้วครับ!');
 };
