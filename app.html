@@ -617,9 +617,24 @@ window.addItem=async(cid)=>{
 window.delItem=(cid,iid)=>{
   verifyPin(async()=>{
     const c=S.children.find(x=>x.id===cid);
-    if(c.items.length<=1){toast('⚠️ ต้องมีอย่างน้อย 1 ไอเทม');return;}
-    c.items=c.items.filter(x=>x.id!==iid);await save();renderAll();
+    c.items=c.items.filter(x=>x.id!==iid);
+    await save();renderAll();toast('🗑 ลบแล้วครับ');
   });
+};
+
+window.delSelectedItems=(cid)=>{
+  const checkboxes=document.querySelectorAll(`.item-check-${cid}:checked`);
+  if(!checkboxes.length){toast('⚠️ ยังไม่ได้เลือกไอเทมครับ');return;}
+  verifyPin(async()=>{
+    const ids=Array.from(checkboxes).map(cb=>cb.value);
+    const c=S.children.find(x=>x.id===cid);
+    c.items=c.items.filter(x=>!ids.includes(x.id));
+    await save();renderAll();toast('🗑 ลบ '+ids.length+' ไอเทมแล้วครับ');
+  });
+};
+
+window.toggleAllItems=(cid,checked)=>{
+  document.querySelectorAll(`.item-check-${cid}`).forEach(cb=>cb.checked=checked);
 };
 window.updCN=async(cid,v)=>{S.children.find(x=>x.id===cid).name=v;clearTimeout(calcTm);calcTm=setTimeout(()=>save(),800);};
 window.updCUID=async(cid,v)=>{S.children.find(x=>x.id===cid).uid=v;clearTimeout(calcTm);calcTm=setTimeout(()=>save(),800);};
@@ -1067,8 +1082,15 @@ function renderManage(){
         <div style="font-size:10px;color:var(--text3);margin-bottom:3px">UID</div>
         <input class="minp" value="${c.uid||''}" placeholder="UID ตัวเด็ก" onchange="updCUID('${c.id}',this.value)" style="font-family:monospace;font-size:12px">
       </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+        <label style="font-size:12px;color:var(--text3);display:flex;align-items:center;gap:6px;cursor:pointer">
+          <input type="checkbox" onchange="toggleAllItems('${c.id}',this.checked)"> เลือกทั้งหมด
+        </label>
+        <button class="del-btn" style="width:auto;padding:3px 10px;font-size:12px" onclick="delSelectedItems('${c.id}')">🗑 ลบที่เลือก</button>
+      </div>
       ${c.items.map(item=>`
-        <div class="mrow">
+        <div class="mrow" style="grid-template-columns:auto 1fr auto auto">
+          <input type="checkbox" class="item-check-${c.id}" value="${item.id}" style="width:16px;height:16px;cursor:pointer">
           <input class="minp" value="${item.name}" onchange="updIN('${c.id}','${item.id}',this.value)">
           <span style="font-size:11px;color:var(--text3);white-space:nowrap">${item.qty}ชิ้น</span>
           <button class="del-btn" onclick="delItem('${c.id}','${item.id}')">✕</button>
