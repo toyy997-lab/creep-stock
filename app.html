@@ -1135,7 +1135,8 @@ function renderManage(){
         <input class="minp" value="${item.name}" onchange="updMainItemName('${item.id}',this.value)">
         <button class="del-btn" onclick="delMainItem('${item.id}')">🗑</button>
       </div>`).join('')}
-    <button class="add-c-btn" onclick="addMainItem()">+ เพิ่มไอเทมตัวหลัก</button>
+    <button class="add-c-btn" onclick="showLibPicker('MAIN')">+ เพิ่มไอเทม (เลือกจากคลัง)</button>
+    <button class="add-c-btn" style="margin-top:4px;color:var(--text3)" onclick="addMainItem()">+ เพิ่มไอเทมเปล่า (พิมชื่อเอง)</button>
   </div>`;
 
   document.getElementById('manageCards').innerHTML=priceCard+S.children.map(c=>`
@@ -1194,6 +1195,13 @@ window.closeLibPicker=()=>document.getElementById('libOverlay').classList.remove
 window.pickLibItem=async(cid,libId)=>{
   const libItem=LIB.find(x=>x.id===libId);
   if(!libItem)return;
+  if(cid==='MAIN'){
+    // เพิ่มไอเทมตัวหลักจากคลัง — เก็บใน SM แทน S.children เพราะตัวหลักอยู่คนละ document
+    SM.items.push({id:'m'+Date.now(),emoji:libItem.emoji||'📦',name:libItem.name,img:libItem.img||'',qty:0,buyPrice:libItem.buy||0,sellPrice:libItem.sell||0,cutLoss:0,unit:'ชิ้น'});
+    await saveM();renderMainItems();renderManage();closeLibPicker();
+    toast('✅ เพิ่ม '+libItem.name+' แล้วครับ!');
+    return;
+  }
   const c=S.children.find(x=>x.id===cid);
   if(!c)return;
   c.items.push({id:uid(),name:libItem.name,img:libItem.img||'',qty:0});
