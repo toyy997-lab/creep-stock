@@ -99,23 +99,26 @@ select.finp option{background:var(--bg3)}
     <div class="form-row three">
       <input class="finp" id="newEmoji" placeholder="อีโมจิ 🎁" maxlength="4">
       <input class="finp" id="newName" placeholder="ชื่อไอเทม *">
-      <select class="finp" id="newCat">
-        <option value="โบส้ม">🟠 โบส้ม</option>
-        <option value="โบแดง">🔴 โบแดง</option>
-        <option value="นักปราชญ์">🧙 นักปราชญ์</option>
-        <option value="แฟชั่น">👕 แฟชั่น</option>
-        <option value="สมุน">👾 สมุน</option>
-        <option value="หนาม">🌵 หนาม</option>
-        <option value="ปีก">🪶 ปีก</option>
-        <option value="การ์ด">🃏 การ์ด</option>
-        <option value="อื่นๆ">📦 อื่นๆ</option>
-      </select>
+      <select class="finp" id="newCat"></select>
     </div>
     <div class="form-row">
       <input class="finp" id="newBuy" type="number" placeholder="ราคารับซื้อ (ไม่ต้องใส่ก็ได้)" step="0.01">
       <input class="finp" id="newSell" type="number" placeholder="ราคาขาย (ไม่ต้องใส่ก็ได้)" step="0.01">
     </div>
     <button class="add-btn" onclick="addItem()">+ เพิ่มไอเทม</button>
+  </div>
+
+  <!-- CATEGORY MANAGE TOGGLE -->
+  <div style="text-align:right;margin-bottom:8px">
+    <button class="btn-sm" onclick="toggleCatManage()">🏷️ จัดการหมวดหมู่</button>
+  </div>
+  <div class="add-card" id="catManageCard" style="display:none;border-color:var(--blue)">
+    <h3 style="color:var(--blue)">🏷️ จัดการหมวดหมู่</h3>
+    <div id="catManageList"></div>
+    <div class="form-row" style="grid-template-columns:1fr">
+      <input class="finp" id="newCatName" placeholder="ชื่อหมวดหมู่ใหม่">
+    </div>
+    <button class="add-btn" onclick="addCat()">+ เพิ่มหมวดหมู่</button>
   </div>
 
   <!-- FILTER -->
@@ -132,17 +135,7 @@ select.finp option{background:var(--bg3)}
     <div class="form-row three" style="margin-bottom:8px">
       <input class="finp" id="editEmoji" placeholder="อีโมจิ">
       <input class="finp" id="editName" placeholder="ชื่อไอเทม">
-      <select class="finp" id="editCat">
-        <option value="โบส้ม">🟠 โบส้ม</option>
-        <option value="โบแดง">🔴 โบแดง</option>
-        <option value="นักปราชญ์">🧙 นักปราชญ์</option>
-        <option value="แฟชั่น">👕 แฟชั่น</option>
-        <option value="สมุน">👾 สมุน</option>
-        <option value="หนาม">🌵 หนาม</option>
-        <option value="ปีก">🪶 ปีก</option>
-        <option value="การ์ด">🃏 การ์ด</option>
-        <option value="อื่นๆ">📦 อื่นๆ</option>
-      </select>
+      <select class="finp" id="editCat"></select>
     </div>
     <div class="form-row">
       <input class="finp" id="editBuy" type="number" placeholder="ราคารับซื้อ" step="0.01">
@@ -165,20 +158,39 @@ const FC={apiKey:"AIzaSyDtUip5OhtPC3Qnyj6SRNEuI9xaE47_pgA",authDomain:"creep-sto
 const db=getFirestore(initializeApp(FC));
 const DR=doc(db,"stock","itemLibrary");
 
-const CATS=["ทั้งหมด","โบส้ม","โบแดง","นักปราชญ์","แฟชั่น","สมุน","หนาม","ปีก","การ์ด","อื่นๆ"];
-const CAT_COLOR={"โบส้ม":"#e8822a","โบแดง":"#e05252","นักปราชญ์":"#9b6fd4","แฟชั่น":"#5b8fd4","สมุน":"#4caf7a","หนาม":"#d4a843","ปีก":"#5b8fd4","การ์ด":"#e05252","อื่นๆ":"#5a5a70"};
+// หมวดหมู่เริ่มต้น (ใช้ตอนที่ยังไม่เคยมี cats เก็บใน Firebase — จะ migrate ให้อัตโนมัติตอนโหลดครั้งแรก)
+const DEFAULT_CATS=[
+  {name:"โบส้ม",color:"#e8822a"},{name:"โบแดง",color:"#e05252"},{name:"นักปราชญ์",color:"#9b6fd4"},
+  {name:"แฟชั่น",color:"#5b8fd4"},{name:"สมุน",color:"#4caf7a"},{name:"หนาม",color:"#d4a843"},
+  {name:"ปีก",color:"#5b8fd4"},{name:"การ์ด",color:"#e05252"},{name:"อื่นๆ",color:"#5a5a70"}
+];
+const NEW_CAT_PALETTE=['#e8822a','#e05252','#9b6fd4','#5b8fd4','#4caf7a','#d4a843','#5a5a70','#ec7fb3','#5ec9c9','#c4a25a'];
 
-let items=[],activeCat="ทั้งหมด",editingId=null,saving=false,toastTm;
+let items=[],catList=DEFAULT_CATS.map(c=>({...c})),activeCat="ทั้งหมด",editingId=null,saving=false,toastTm,catManageOpen=false;
+
+function catColor(name){return (catList.find(c=>c.name===name)||{}).color||'var(--text3)';}
+function catNames(){return ["ทั้งหมด",...catList.map(c=>c.name)];}
 
 async function loadFB(){
   try{
     setSync('syncing');
     const snap=await getDoc(DR);
-    if(snap.exists())items=snap.data().items||[];
-    else{items=[];await setDoc(DR,{items:[]});}
+    if(snap.exists()){
+      const d=snap.data();
+      items=d.items||[];
+      if(d.cats&&d.cats.length){
+        catList=d.cats;
+      } else {
+        catList=DEFAULT_CATS.map(c=>({...c})); // ข้อมูลเก่ายังไม่มี cats -> migrate ให้ครั้งเดียว
+        await setDoc(DR,{items,cats:catList});
+      }
+    } else {
+      items=[];catList=DEFAULT_CATS.map(c=>({...c}));
+      await setDoc(DR,{items:[],cats:catList});
+    }
     document.getElementById('loading').style.display='none';
     renderAll();setSync('ok');
-    onSnapshot(DR,sn=>{if(sn.exists()&&!saving){items=sn.data().items||[];renderAll();setSync('ok')}});
+    onSnapshot(DR,sn=>{if(sn.exists()&&!saving){const d=sn.data();items=d.items||[];if(d.cats&&d.cats.length)catList=d.cats;renderAll();setSync('ok')}});
   }catch(e){
     setSync('error');document.getElementById('loading').style.display='none';
     toast('❌ เชื่อมต่อไม่ได้');
@@ -186,7 +198,7 @@ async function loadFB(){
 }
 
 async function save(){
-  try{saving=true;setSync('syncing');await setDoc(DR,{items});setSync('ok');}
+  try{saving=true;setSync('syncing');await setDoc(DR,{items,cats:catList});setSync('ok');}
   catch(e){setSync('error');toast('❌ บันทึกไม่ได้');}
   finally{setTimeout(()=>{saving=false;},2000);}
 }
@@ -276,21 +288,89 @@ window.toast=(msg)=>{
 
 function renderStats(){
   const total=items.length;
-  const byCat={};CATS.slice(1).forEach(c=>{byCat[c]=items.filter(x=>x.cat===c).length;});
+  const byCat={};catList.forEach(c=>{byCat[c.name]=items.filter(x=>x.cat===c.name).length;});
   const topCats=Object.entries(byCat).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]).slice(0,3);
   document.getElementById('statsBar').innerHTML=`
     <div class="stat"><div class="stat-num">${total}</div><div class="stat-lbl">ไอเทมทั้งหมด</div></div>
-    ${topCats.map(([cat,n])=>`<div class="stat"><div class="stat-num" style="color:${CAT_COLOR[cat]||'var(--text)'}">${n}</div><div class="stat-lbl">${cat}</div></div>`).join('')}
-    ${topCats.length<3?`<div class="stat"><div class="stat-num" style="color:var(--text3)">${CATS.slice(1).filter(c=>!topCats.find(([cc])=>cc===c)).length}</div><div class="stat-lbl">หมวดอื่น</div></div>`:''}
+    ${topCats.map(([cat,n])=>`<div class="stat"><div class="stat-num" style="color:${catColor(cat)}">${n}</div><div class="stat-lbl">${cat}</div></div>`).join('')}
+    ${topCats.length<3?`<div class="stat"><div class="stat-num" style="color:var(--text3)">${catList.filter(c=>!topCats.find(([cc])=>cc===c.name)).length}</div><div class="stat-lbl">หมวดอื่น</div></div>`:''}
   `;
 }
 
 function renderCatTabs(){
-  document.getElementById('catTabs').innerHTML=CATS.map(cat=>{
+  document.getElementById('catTabs').innerHTML=catNames().map(cat=>{
     const count=cat==="ทั้งหมด"?items.length:items.filter(x=>x.cat===cat).length;
     return `<button class="cat-tab ${activeCat===cat?'active':''}" onclick="filterCat('${cat}')">${cat} ${count>0?'('+count+')':''}</button>`;
   }).join('');
 }
+
+function renderCatOptions(){
+  const optsHTML=catList.map(c=>`<option value="${c.name}">${c.name}</option>`).join('');
+  const newSel=document.getElementById('newCat'),editSel=document.getElementById('editCat');
+  const keepNew=newSel.value,keepEdit=editSel.value;
+  newSel.innerHTML=optsHTML;editSel.innerHTML=optsHTML;
+  if(catList.some(c=>c.name===keepNew))newSel.value=keepNew;
+  if(catList.some(c=>c.name===keepEdit))editSel.value=keepEdit;
+}
+
+function renderCatManage(){
+  const el=document.getElementById('catManageList');
+  if(!el)return;
+  el.innerHTML=catList.map(c=>{
+    const count=items.filter(x=>x.cat===c.name).length;
+    return `<div style="display:grid;grid-template-columns:auto 1fr auto auto;gap:6px;align-items:center;margin-bottom:6px">
+      <input type="color" value="${c.color}" onchange="updCatColor('${c.name}',this.value)" style="width:32px;height:32px;border:1px solid var(--border2);border-radius:6px;background:none;cursor:pointer;padding:0">
+      <input class="finp" value="${c.name}" onchange="renameCat('${c.name}',this.value)">
+      <span style="font-size:11px;color:var(--text3);white-space:nowrap">${count} ชิ้น</span>
+      <button class="iact-btn del" style="flex:none;width:32px;padding:6px 0" onclick="delCat('${c.name}')">🗑</button>
+    </div>`;
+  }).join('');
+}
+
+window.toggleCatManage=()=>{
+  catManageOpen=!catManageOpen;
+  document.getElementById('catManageCard').style.display=catManageOpen?'block':'none';
+  if(catManageOpen)renderCatManage();
+};
+
+window.addCat=async()=>{
+  const input=document.getElementById('newCatName');
+  const name=input.value.trim();
+  if(!name){toast('⚠️ ใส่ชื่อหมวดหมู่ก่อนครับ');return;}
+  if(catList.some(c=>c.name===name)){toast('⚠️ มีหมวดหมู่นี้อยู่แล้ว');return;}
+  catList.push({name,color:NEW_CAT_PALETTE[catList.length%NEW_CAT_PALETTE.length]});
+  input.value='';
+  await save();renderAll();toast('✅ เพิ่มหมวดหมู่ '+name+' แล้วครับ');
+};
+
+window.renameCat=async(oldName,newName)=>{
+  newName=newName.trim();
+  if(!newName||newName===oldName){renderCatManage();return;}
+  if(catList.some(c=>c.name===newName)){toast('⚠️ มีหมวดหมู่ชื่อนี้อยู่แล้ว');renderCatManage();return;}
+  const cat=catList.find(c=>c.name===oldName);if(!cat)return;
+  cat.name=newName;
+  items.forEach(i=>{if(i.cat===oldName)i.cat=newName;});
+  if(activeCat===oldName)activeCat=newName;
+  await save();renderAll();toast('✅ เปลี่ยนชื่อหมวดหมู่แล้วครับ');
+};
+
+window.updCatColor=async(name,color)=>{
+  const cat=catList.find(c=>c.name===name);if(!cat)return;
+  cat.color=color;
+  await save();renderAll();
+};
+
+window.delCat=async(name)=>{
+  if(catList.length<=1){toast('⚠️ ต้องมีอย่างน้อย 1 หมวดหมู่');return;}
+  const count=items.filter(i=>i.cat===name).length;
+  const fallback=catList.find(c=>c.name!==name&&c.name==='อื่นๆ')||catList.find(c=>c.name!==name);
+  const msg=count>0?`ลบหมวดหมู่ "${name}"? ไอเทม ${count} ชิ้นในหมวดนี้จะถูกย้ายไปหมวด "${fallback.name}"`:`ลบหมวดหมู่ "${name}"?`;
+  if(!confirm(msg))return;
+  items.forEach(i=>{if(i.cat===name)i.cat=fallback.name;});
+  catList=catList.filter(c=>c.name!==name);
+  if(activeCat===name)activeCat='ทั้งหมด';
+  await save();renderAll();toast('🗑 ลบหมวดหมู่แล้วครับ');
+};
 
 function renderGrid(){
   const filtered=activeCat==="ทั้งหมด"?items:items.filter(x=>x.cat===activeCat);
@@ -300,7 +380,7 @@ function renderGrid(){
     return;
   }
   el.innerHTML=filtered.map(item=>{
-    const color=CAT_COLOR[item.cat]||'var(--text3)';
+    const color=catColor(item.cat);
     return `<div class="item-card">
       <div class="item-img" style="position:relative">
         ${item.img?`<img src="${item.img}" alt="">`:`<span style="font-size:40px">${item.emoji}</span>`}
@@ -319,7 +399,7 @@ function renderGrid(){
   }).join('');
 }
 
-function renderAll(){renderStats();renderCatTabs();renderGrid();}
+function renderAll(){renderCatOptions();renderStats();renderCatTabs();renderGrid();if(catManageOpen)renderCatManage();}
 
 loadFB();
 </script>
