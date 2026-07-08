@@ -377,7 +377,17 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--text);min
   </div>
 </div>
 
-<!-- RESET MODAL -->
+<!-- LIBRARY PICKER -->
+<div class="overlay" id="libOverlay" onclick="closeLibPicker()">
+  <div class="modal" onclick="event.stopPropagation()" style="max-height:80vh;overflow-y:auto">
+    <h2>📦 เลือกไอเทมจากคลัง</h2>
+    <p>กดที่ไอเทมที่อยากเพิ่มได้เลยครับ</p>
+    <div id="libPickerContent"></div>
+    <div class="modal-btns" style="margin-top:12px">
+      <button class="mbtn-cancel" onclick="closeLibPicker()">ปิด</button>
+    </div>
+  </div>
+</div>
 <div class="overlay" id="overlay" onclick="closeModal()">
   <div class="modal" onclick="event.stopPropagation()">
     <h2>🔄 รีเซ็ตรอบส่ง</h2>
@@ -397,7 +407,9 @@ import{getFirestore,doc,getDoc,setDoc,onSnapshot}from"https://www.gstatic.com/fi
 
 const FC={apiKey:"AIzaSyDtUip5OhtPC3Qnyj6SRNEuI9xaE47_pgA",authDomain:"creep-stock.firebaseapp.com",projectId:"creep-stock",storageBucket:"creep-stock.firebasestorage.app",messagingSenderId:"896850479864",appId:"1:896850479864:web:724a6d21b10247cbef090d"};
 const db=getFirestore(initializeApp(FC));
+const DR_LIB=doc(db,"stock","itemLibrary");
 const DR=doc(db,"stock","main"),DR2=doc(db,"stock","calc"),DR3=doc(db,"stock","mainItems");
+let LIB=[];
 
 // DEFAULT DATA
 const DEF={
@@ -446,10 +458,11 @@ Object.defineProperty(window,'saving',{
 async function loadFB(){
   try{
     setSync('syncing');
-    const[s1,s2,s3]=await Promise.all([getDoc(DR),getDoc(DR2),getDoc(DR3)]);
+    const[s1,s2,s3,sLib]=await Promise.all([getDoc(DR),getDoc(DR2),getDoc(DR3),getDoc(DR_LIB)]);
     if(s1.exists())S=s1.data();else await setDoc(DR,DEF);
     if(s2.exists())SC=s2.data();else await setDoc(DR2,DEF2);
     if(s3.exists())SM=s3.data();else await setDoc(DR3,DEF3);
+    if(sLib.exists())LIB=sLib.data().items||[];
     if(!S.settings)S.settings={lowAlert:100,crisisAlert:50};
     checkReset();
     document.getElementById('loading').style.display='none';
@@ -1060,11 +1073,45 @@ function renderManage(){
           <span style="font-size:11px;color:var(--text3);white-space:nowrap">${item.qty}ชิ้น</span>
           <button class="del-btn" onclick="delItem('${c.id}','${item.id}')">✕</button>
         </div>`).join('')}
-      <button class="add-c-btn" onclick="addItem('${c.id}')">+ เพิ่มไอเทม</button>
+      <button class="add-c-btn" onclick="showLibPicker('${c.id}')">+ เพิ่มไอเทม (เลือกจากคลัง)</button>
+      <button class="add-c-btn" style="margin-top:4px;color:var(--text3)" onclick="addItem('${c.id}')">+ เพิ่มไอเทมเปล่า (พิมชื่อเอง)</button>
     </div>`).join('');
 }
 
-window.updCSellPrice=async(cid,val)=>{
+window.showLibPicker=(cid)=>{
+  const el=document.getElementById('libPickerContent');
+  if(!LIB.length){
+    el.innerHTML='<div style="font-size:13px;color:var(--text3);text-align:center;padding:20px">คลังว่างอยู่ครับ<br>ไปเพิ่มที่ <a href="items.html" style="color:var(--orange)">items.html</a> ก่อนนะครับ</div>';
+  } else {
+    const byCat={};
+    LIB.forEach(i=>{if(!byCat[i.cat])byCat[i.cat]=[];byCat[i.cat].push(i);});
+    el.innerHTML=Object.entries(byCat).map(([cat,items])=>`
+      <div style="margin-bottom:10px">
+        <div style="font-size:11px;color:var(--text3);margin-bottom:6px;font-weight:600">${cat}</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px">
+          ${items.map(i=>`
+            <button onclick="pickLibItem('${cid}','${i.id}')" style="background:var(--bg3);border:1px solid var(--border2);border-radius:var(--rs);color:var(--text);font-family:Sarabun,sans-serif;font-size:13px;padding:6px 12px;cursor:pointer;display:flex;align-items:center;gap:5px">
+              ${i.img?`<img src="${i.img}" style="width:20px;height:20px;border-radius:3px;object-fit:cover">`:`<span>${i.emoji}</span>`}
+              ${i.name}
+            </button>`).join('')}
+        </div>
+      </div>`).join('');
+  }
+  document.getElementById('libOverlay').classList.add('show');
+  document.getElementById('libOverlay').dataset.cid=cid;
+};
+
+window.closeLibPicker=()=>document.getElementById('libOverlay').classList.remove('show');
+
+window.pickLibItem=async(cid,libId)=>{
+  const libItem=LIB.find(x=>x.id===libId);
+  if(!libItem)return;
+  const c=S.children.find(x=>x.id===cid);
+  if(!c)return;
+  c.items.push({id:uid(),name:libItem.name,img:libItem.img||'',qty:0,_libId:libId});
+  await save();renderAll();closeLibPicker();
+  toast('✅ เพิ่ม '+libItem.name+' แล้วครับ!');
+};
   S.children.find(x=>x.id===cid).sellPrice=val;
   clearTimeout(calcTm);calcTm=setTimeout(()=>save(),600);
   toast('✅ แก้ราคาขายแล้วครับ');
