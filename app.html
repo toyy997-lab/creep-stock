@@ -632,10 +632,24 @@ window.updMainField=async(id,field,val)=>{
   clearTimeout(calcTm);calcTm=setTimeout(()=>saveM(),800);
   renderMainItems();
 };
-window.delMainItem=(id)=>{verifyPin(async()=>{SM.items=SM.items.filter(x=>x.id!==id);await saveM();renderMainItems();toast('🗑 ลบแล้วครับ');});};
+window.delMainItem=(id)=>{verifyPin(async()=>{SM.items=SM.items.filter(x=>x.id!==id);await saveM();renderMainItems();renderManage();toast('🗑 ลบแล้วครับ');});};
 window.addMainItem=async()=>{
   SM.items.push({id:'m'+Date.now(),emoji:'📦',name:'ไอเทมใหม่',qty:0,buyPrice:0,sellPrice:0,cutLoss:0,unit:'ชิ้น'});
-  await saveM();renderMainItems();
+  await saveM();renderMainItems();renderManage();
+};
+
+window.delSelectedMainItems=()=>{
+  const checkboxes=document.querySelectorAll('.item-check-MAIN:checked');
+  if(!checkboxes.length){toast('⚠️ ยังไม่ได้เลือกไอเทมครับ');return;}
+  verifyPin(async()=>{
+    const ids=Array.from(checkboxes).map(cb=>cb.value);
+    SM.items=SM.items.filter(x=>!ids.includes(x.id));
+    await saveM();renderMainItems();renderManage();toast('🗑 ลบ '+ids.length+' ไอเทมแล้วครับ');
+  });
+};
+
+window.toggleAllMainItems=(checked)=>{
+  document.querySelectorAll('.item-check-MAIN').forEach(cb=>cb.checked=checked);
 };
 
 // MANAGE
@@ -1129,8 +1143,15 @@ function renderManage(){
   </div>
   <div class="mc" style="border-color:var(--purple)">
     <h3 style="color:var(--purple)">⭐ จัดการไอเทมตัวหลัก</h3>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+      <label style="font-size:12px;color:var(--text3);display:flex;align-items:center;gap:6px;cursor:pointer">
+        <input type="checkbox" onchange="toggleAllMainItems(this.checked)"> เลือกทั้งหมด
+      </label>
+      <button class="del-btn" style="width:auto;padding:3px 10px;font-size:12px" onclick="delSelectedMainItems()">🗑 ลบที่เลือก</button>
+    </div>
     ${(SM.items||[]).map(item=>`
-      <div class="mrow" style="grid-template-columns:auto 1fr auto">
+      <div class="mrow" style="grid-template-columns:auto auto 1fr auto">
+        <input type="checkbox" class="item-check-MAIN" value="${item.id}" style="width:16px;height:16px;cursor:pointer">
         <span style="font-size:20px;cursor:pointer;padding:0 4px" onclick="const e=prompt('อีโมจิใหม่:');if(e){updMainField('${item.id}','emoji',e.trim());renderManage();}" title="กดเพื่อเปลี่ยนอีโมจิ">${item.emoji}</span>
         <input class="minp" value="${item.name}" onchange="updMainItemName('${item.id}',this.value)">
         <button class="del-btn" onclick="delMainItem('${item.id}')">🗑</button>
