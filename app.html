@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="th">
 <head>
@@ -1113,6 +1112,8 @@ window.pickLibItem=async(cid,libId)=>{
   await save();renderAll();closeLibPicker();
   toast('✅ เพิ่ม '+libItem.name+' แล้วครับ!');
 };
+
+window.updCSellPrice=async(cid,val)=>{
   S.children.find(x=>x.id===cid).sellPrice=val;
   clearTimeout(calcTm);calcTm=setTimeout(()=>save(),600);
   toast('✅ แก้ราคาขายแล้วครับ');
