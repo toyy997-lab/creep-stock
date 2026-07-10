@@ -37,6 +37,9 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--text);min
 .content{padding:14px 16px;max-width:640px;margin:0 auto}
 
 .ccard{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);margin-bottom:14px;overflow:hidden}
+.ccard.main{border-color:#9b6fd4}
+.ccard.main .chead{border-bottom-color:#9b6fd4}
+.ccard.main .ctitle{color:#9b6fd4}
 .chead{padding:14px 16px 12px;border-bottom:1px solid var(--border)}
 .ctitle{font-size:17px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:6px}
 .citems-hint{font-size:11px;color:var(--text3);margin-top:2px}
@@ -87,9 +90,15 @@ import{getFirestore,doc,getDoc,onSnapshot}from"https://www.gstatic.com/firebasej
 const FC={apiKey:"AIzaSyDtUip5OhtPC3Qnyj6SRNEuI9xaE47_pgA",authDomain:"creep-stock.firebaseapp.com",projectId:"creep-stock",storageBucket:"creep-stock.firebasestorage.app",messagingSenderId:"896850479864",appId:"1:896850479864:web:724a6d21b10247cbef090d"};
 const db=getFirestore(initializeApp(FC));
 const DR=doc(db,"stock","main");
+const DR3=doc(db,"stock","mainItems");
 const DR_LIB=doc(db,"stock","itemLibrary");
 
-let children=[],lib=[];
+// UID ของ "ตัวหลัก" (⚔️ ครีปถือดาบ) — ตอนนี้ยังไม่มีช่องเก็บใน Firebase (ฝังตายตัวไว้ใน app.html เหมือนกัน)
+// ถ้าคุณเปลี่ยน UID ตัวหลัก ต้องมาแก้ค่านี้ในไฟล์นี้ด้วยครับ (แก้คู่กับใน app.html)
+const MAIN_UID="69dbef3e796fdab51bc0733b";
+const MAIN_NAME="⚔️ ครีปถือดาบ (ตัวหลัก)";
+
+let children=[],mainItems=[],lib=[];
 
 function libLookup(name){
   return lib.find(x=>x.name===name);
@@ -103,12 +112,14 @@ function setSync(s){
 async function loadFB(){
   try{
     setSync('syncing');
-    const[s,sLib]=await Promise.all([getDoc(DR),getDoc(DR_LIB)]);
+    const[s,s3,sLib]=await Promise.all([getDoc(DR),getDoc(DR3),getDoc(DR_LIB)]);
     if(s.exists())children=s.data().children||[];
+    if(s3.exists())mainItems=s3.data().items||[];
     if(sLib.exists())lib=sLib.data().items||[];
     document.getElementById('loading').style.display='none';
     renderAll();setSync('ok');
     onSnapshot(DR,sn=>{if(sn.exists()){children=sn.data().children||[];renderAll();setSync('ok');}});
+    onSnapshot(DR3,sn=>{if(sn.exists()){mainItems=sn.data().items||[];renderAll();}});
     onSnapshot(DR_LIB,sn=>{if(sn.exists()){lib=sn.data().items||[];renderAll();}});
   }catch(e){
     setSync('error');
@@ -136,9 +147,13 @@ function toast(msg){
 
 function renderAll(){
   const q=(document.getElementById('searchBox').value||'').trim().toLowerCase();
-  const sorted=[...children].sort((a,b)=>(a.order||0)-(b.order||0));
 
-  const filtered=q?sorted.filter(c=>(c.items||[]).some(i=>(i.name||'').toLowerCase().includes(q))||(c.name||'').toLowerCase().includes(q)):sorted;
+  // "ตัวหลัก" (⚔️ ครีปถือดาบ) โผล่เป็นการ์ดแรกเสมอ ต่อด้วยตัวเด็ก 1-7... เรียงตาม order
+  const mainCard={id:'MAIN',name:MAIN_NAME,uid:MAIN_UID,items:mainItems,isMain:true};
+  const sortedChildren=[...children].sort((a,b)=>(a.order||0)-(b.order||0));
+  const all=[mainCard,...sortedChildren];
+
+  const filtered=q?all.filter(c=>(c.items||[]).some(i=>(i.name||'').toLowerCase().includes(q))||(c.name||'').toLowerCase().includes(q)):all;
 
   const el=document.getElementById('cardList');
   if(!filtered.length){
@@ -150,7 +165,7 @@ function renderAll(){
     const items=(c.items||[]).map(i=>{
       const fromLib=libLookup(i.name);
       const img=i.img||(fromLib&&fromLib.img)||'';
-      const emoji=(fromLib&&fromLib.emoji)||'🎁';
+      const emoji=i.emoji||(fromLib&&fromLib.emoji)||'🎁';
       const imgHtml=img?`<img src="${img}" alt="">`:`<span>${emoji}</span>`;
       return `<div class="item-chip">
         <div class="item-img">${imgHtml}</div>
@@ -158,7 +173,7 @@ function renderAll(){
       </div>`;
     }).join('');
 
-    return `<div class="ccard">
+    return `<div class="ccard${c.isMain?' main':''}">
       <div class="chead">
         <div class="ctitle">${escapeHtml(c.name||'')}</div>
         <div class="citems-hint">ส่งไอเทมด้านล่างนี้เข้าตัวนี้เท่านั้น</div>
