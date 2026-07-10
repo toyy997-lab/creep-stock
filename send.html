@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ส่งของ">
+<title>ส่งของ — ครีปถือดาบ</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
+:root{
+  --bg:#0f0f13;--bg2:#18181f;--bg3:#22222c;
+  --border:#2e2e3a;--border2:#3e3e4e;
+  --text:#e8e8f0;--text2:#9090a8;--text3:#5a5a70;
+  --orange:#e8822a;--orange2:#c46818;
+  --green:#4caf7a;--green-dim:#0a2016;
+  --red:#e05252;
+  --r:14px;--rs:9px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:40px}
+
+.hdr{background:var(--bg2);border-bottom:1px solid var(--border);padding:14px 16px;position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between}
+.hdr h1{font-size:17px;font-weight:600;display:flex;align-items:center;gap:6px}
+.hdr .sub{font-size:11px;color:var(--text3);margin-top:2px}
+.sync-dot{width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block}
+.sync-dot.syncing{background:#d4a843;animation:pulse 1s infinite}
+.sync-dot.error{background:var(--red)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+.search-wrap{padding:12px 16px 0}
+.search-inp{width:100%;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--rs);color:var(--text);font-family:'Sarabun',sans-serif;font-size:14px;padding:11px 14px;outline:none}
+.search-inp:focus{border-color:var(--orange)}
+.search-inp::placeholder{color:var(--text3)}
+
+.content{padding:14px 16px;max-width:640px;margin:0 auto}
+
+.ccard{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);margin-bottom:14px;overflow:hidden}
+.chead{padding:14px 16px 12px;border-bottom:1px solid var(--border)}
+.ctitle{font-size:17px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:6px}
+.citems-hint{font-size:11px;color:var(--text3);margin-top:2px}
+
+.item-row{display:flex;flex-wrap:wrap;gap:10px;padding:14px 16px}
+.item-chip{display:flex;flex-direction:column;align-items:center;width:74px;text-align:center}
+.item-img{width:56px;height:56px;border-radius:10px;background:var(--bg3);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:26px;overflow:hidden}
+.item-img img{width:100%;height:100%;object-fit:cover}
+.item-name{font-size:11px;color:var(--text2);margin-top:5px;line-height:1.3;word-break:break-word}
+
+.copy-uid-btn{width:calc(100% - 32px);margin:0 16px 16px;background:var(--orange);border:none;border-radius:var(--rs);color:#fff;font-family:'Sarabun',sans-serif;font-size:14px;font-weight:600;padding:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
+.copy-uid-btn:active{background:var(--orange2)}
+.copy-uid-btn.copied{background:var(--green)}
+
+.empty{text-align:center;padding:60px 20px;color:var(--text3);font-size:14px}
+.loading{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;gap:16px}
+.loading .spinner{width:40px;height:40px;border:3px solid var(--border2);border-top-color:var(--orange);border-radius:50%;animation:spin .8s linear infinite}
+.loading p{font-size:14px;color:var(--text2)}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(60px);background:var(--bg2);border:1px solid var(--border2);border-left:3px solid var(--orange);color:var(--text);padding:11px 22px;border-radius:var(--r);font-size:13px;z-index:999;opacity:0;transition:all .25s;white-space:nowrap;pointer-events:none}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+</style>
+</head>
+<body>
+
+<div class="loading" id="loading"><div class="spinner"></div><p>กำลังโหลดข้อมูล...</p></div>
+
+<div class="hdr">
+  <div>
+    <h1>📤 ส่งของ <span class="sync-dot" id="syncDot"></span></h1>
+    <div class="sub">ครีปถือดาบ — เลือกตัวที่มีของที่จะส่ง แล้วกดคัดลอก UID</div>
+  </div>
+</div>
+
+<div class="search-wrap">
+  <input class="search-inp" id="searchBox" placeholder="🔍 ค้นหาชื่อไอเทมที่จะส่ง..." oninput="renderAll()">
+</div>
+
+<div class="content" id="cardList"></div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import{initializeApp}from"https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
+import{getFirestore,doc,getDoc,onSnapshot}from"https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+
+const FC={apiKey:"AIzaSyDtUip5OhtPC3Qnyj6SRNEuI9xaE47_pgA",authDomain:"creep-stock.firebaseapp.com",projectId:"creep-stock",storageBucket:"creep-stock.firebasestorage.app",messagingSenderId:"896850479864",appId:"1:896850479864:web:724a6d21b10247cbef090d"};
+const db=getFirestore(initializeApp(FC));
+const DR=doc(db,"stock","main");
+const DR_LIB=doc(db,"stock","itemLibrary");
+
+let children=[],lib=[];
+
+function libLookup(name){
+  return lib.find(x=>x.name===name);
+}
+
+function setSync(s){
+  const d=document.getElementById('syncDot');
+  d.className='sync-dot'+(s==='syncing'?' syncing':s==='error'?' error':'');
+}
+
+async function loadFB(){
+  try{
+    setSync('syncing');
+    const[s,sLib]=await Promise.all([getDoc(DR),getDoc(DR_LIB)]);
+    if(s.exists())children=s.data().children||[];
+    if(sLib.exists())lib=sLib.data().items||[];
+    document.getElementById('loading').style.display='none';
+    renderAll();setSync('ok');
+    onSnapshot(DR,sn=>{if(sn.exists()){children=sn.data().children||[];renderAll();setSync('ok');}});
+    onSnapshot(DR_LIB,sn=>{if(sn.exists()){lib=sn.data().items||[];renderAll();}});
+  }catch(e){
+    setSync('error');
+    document.getElementById('loading').style.display='none';
+    document.getElementById('cardList').innerHTML='<div class="empty">❌ โหลดข้อมูลไม่สำเร็จ ลองรีเฟรชหน้าอีกครั้งครับ</div>';
+  }
+}
+
+window.copyUID=(uid,btn)=>{
+  navigator.clipboard.writeText(uid).then(()=>{
+    toast('📋 คัดลอก UID แล้ว!');
+    const orig=btn.textContent;
+    btn.textContent='✅ คัดลอกแล้ว';
+    btn.classList.add('copied');
+    setTimeout(()=>{btn.textContent=orig;btn.classList.remove('copied');},1500);
+  }).catch(()=>toast('❌ คัดลอกไม่ได้ ลองแตะค้างที่ UID แทนครับ'));
+};
+
+let toastTm;
+function toast(msg){
+  const el=document.getElementById('toast');
+  el.textContent=msg;el.classList.add('show');
+  clearTimeout(toastTm);toastTm=setTimeout(()=>el.classList.remove('show'),2000);
+}
+
+function renderAll(){
+  const q=(document.getElementById('searchBox').value||'').trim().toLowerCase();
+  const sorted=[...children].sort((a,b)=>(a.order||0)-(b.order||0));
+
+  const filtered=q?sorted.filter(c=>(c.items||[]).some(i=>(i.name||'').toLowerCase().includes(q))||(c.name||'').toLowerCase().includes(q)):sorted;
+
+  const el=document.getElementById('cardList');
+  if(!filtered.length){
+    el.innerHTML=`<div class="empty">${q?'ไม่พบไอเทมที่ค้นหาครับ':'ยังไม่มีข้อมูลตัวรับของครับ'}</div>`;
+    return;
+  }
+
+  el.innerHTML=filtered.map(c=>{
+    const items=(c.items||[]).map(i=>{
+      const fromLib=libLookup(i.name);
+      const img=i.img||(fromLib&&fromLib.img)||'';
+      const emoji=(fromLib&&fromLib.emoji)||'🎁';
+      const imgHtml=img?`<img src="${img}" alt="">`:`<span>${emoji}</span>`;
+      return `<div class="item-chip">
+        <div class="item-img">${imgHtml}</div>
+        <div class="item-name">${escapeHtml(i.name||'')}</div>
+      </div>`;
+    }).join('');
+
+    return `<div class="ccard">
+      <div class="chead">
+        <div class="ctitle">${escapeHtml(c.name||'')}</div>
+        <div class="citems-hint">ส่งไอเทมด้านล่างนี้เข้าตัวนี้เท่านั้น</div>
+      </div>
+      <div class="item-row">${items||'<div class="citems-hint" style="padding:4px 0">ยังไม่มีไอเทม</div>'}</div>
+      <button class="copy-uid-btn" onclick="copyUID('${(c.uid||'').replace(/'/g,"\\'")}',this)">📋 คัดลอก UID ส่งของ</button>
+    </div>`;
+  }).join('');
+}
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+window.renderAll=renderAll;
+loadFB();
+</script>
+</body>
+</html>
